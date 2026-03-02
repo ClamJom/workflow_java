@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: WorkflowDemo
+  datasource:
+    url: jdbc:mysql://localhost:3306/workflowdemo?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 123456
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000
+  jpa:
+    hibernate:
+      ddl-auto: update
+  threads:
+    virtual:
+      enabled: true
+workflow:
+  expire-time: 86400
