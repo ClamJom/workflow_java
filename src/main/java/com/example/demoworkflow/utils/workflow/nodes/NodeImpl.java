@@ -30,6 +30,8 @@ public class NodeImpl implements Node {
 
     public String token = "";
 
+    public List<Config> configList;
+
     public Map<String, Object> configs;
 
     /**
@@ -83,6 +85,11 @@ public class NodeImpl implements Node {
         conditions.add(config.getName());
     }
 
+    private void parseMap(Config config){
+        Map<String, String> map = JSON.parseObject(config.getValue(), HashMap.class);
+        configs.put(config.getName(), map);
+    }
+
     /**
      * 解析节点配置，需要在节点初始化后调用
      * @param configList  配置列表
@@ -99,6 +106,12 @@ public class NodeImpl implements Node {
                     break;
                 case "Condition":
                     parseCondition(config);
+                    break;
+                case "Map":
+                    parseMap(config);
+                    break;
+                case "Boolean":
+                    configs.put(config.getName(), config.getValue().equalsIgnoreCase("true"));
                     break;
                 default:
                     parseString(config);
@@ -122,7 +135,7 @@ public class NodeImpl implements Node {
      * 获取当前节点所需的全部配置
      * @return 当前节点所需的配置名称
      */
-    public static List<ConfigVO> getNodeConfigs(){
+    public List<ConfigVO> getNodeConfigs(){
         return new ArrayList<>();
     }
 

@@ -27,10 +27,10 @@ public class ConfigVO {
 
     @Min(value=1, message="不允许将浮点除数设置为小于1")
     // 如果该配置为数字且其有浮点区间限制，将该值作为除数得到相应的浮点值
-    public int k;
+    public int k = 1;
 
     @Min(value=0, message="精度不能小于0")
-    public int quantize;
+    public int quantize = 0;
 
     public boolean required;
 

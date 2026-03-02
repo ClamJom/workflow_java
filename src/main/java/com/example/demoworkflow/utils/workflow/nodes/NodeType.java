@@ -13,6 +13,7 @@ public enum NodeType {
     END("终点", 0x000002),
     HELLO("问候", 0x000003),
     CONDITION("条件", 0x000004),
+    HTTP("网络请求", 0x000005),
     ;
 
     @Getter
@@ -28,6 +29,7 @@ public enum NodeType {
         nodeClazzMap.put(END.getCode(), EndNode.class);
         nodeClazzMap.put(HELLO.getCode(), HelloNode.class);
         nodeClazzMap.put(CONDITION.getCode(), ConditionNode.class);
+        nodeClazzMap.put(HTTP.getCode(), HTTPRequestNode.class);
     }
 
     NodeType(String name, int code){

@@ -48,8 +48,10 @@ public class Workflow {
                throw new NullPointerException("从JSON构造节点对象失败！");
            }
            nodeInstance.setToken(workflow.getToken());
-           List<Config> configs = ConfigMapper.INSTANCE.listConfigVOToListConfig(node.configs);
-           nodeInstance.parseConfig(configs);
+//           List<Config> configs = ConfigMapper.INSTANCE.listConfigVOToListConfig(node.configs);
+//           nodeInstance.parseConfig(configs);
+            // 配置项的初始化应当在节点执行前进行
+            nodeInstance.configList = ConfigMapper.INSTANCE.listConfigVOToListConfig(node.configs);
            nodes.add(nodeInstance);
            nodeMap.put(node.id, nodeInstance);
            if(nodeInstance.getNodeType() == NodeType.START){
