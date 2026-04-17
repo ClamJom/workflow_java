@@ -70,7 +70,6 @@ public class WorkflowHandler {
      */
     @Async("workflow")
     public void handler(Workflow workflow){
-        log.info("开始流式处理工作流");
         globalPool.expire(workflow.getToken());
         resultHandler.run(workflow, sseHandler);
         globalPool.pushWorkflowResult(workflow.getToken(), WorkflowResult.builder()

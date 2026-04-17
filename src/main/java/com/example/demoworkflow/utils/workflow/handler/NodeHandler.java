@@ -60,6 +60,7 @@ public class NodeHandler {
                     // 这是为循环节点预留的方法，他可能指向自己
                     if (item.equals(node.nodeId)) return true;
                     int pNodeState = globalPool.getNodeState(node.token, item);
+                    if (pNodeState == NodeStates.NULL) return false;
                     return (pNodeState & NodeStates.DONE) != 0 || (pNodeState & NodeStates.DISABLED) != 0;
                 }finally {
                     lock.unlock();

@@ -48,7 +48,7 @@ public class Config {
     private boolean required;
 
     // 子配置的配置类型，当这个值为容器类型配置时，需要有一个配置为当前配置的子配置
-    @Column(name="item_type", columnDefinition = "VARCHAR(255) DEFAULT `String`")
+    @Column(name="item_type", columnDefinition = "VARCHAR(255) DEFAULT 'String'")
     private String itemType;
 
     @Column(name="parent", columnDefinition = "INT DEFAULT 0")
