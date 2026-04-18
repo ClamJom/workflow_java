@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public enum NodeType {
     // 注意别把最下方的分号删了！
     EMPTY_NODE("空白节点", 0x00000),
@@ -19,12 +20,14 @@ public enum NodeType {
     CONDITION("条件", 0x000004),
     HTTP("网络请求", 0x000005),
     SLEEP("休眠", 0x000006),
+    LOOP("循环", 0x000007 | NodeType.NESTABLE_FLAG),
     ;
 
-    @Getter
     private final String name;
-    @Getter
     private final int code;
+
+    // 可嵌套节点标志位
+    public static final int NESTABLE_FLAG = 0x010000;
 
     private static final Map<Integer, Class<?>> nodeClazzMap = new HashMap<>();
 
@@ -36,6 +39,7 @@ public enum NodeType {
         nodeClazzMap.put(CONDITION.getCode(), ConditionNode.class);
         nodeClazzMap.put(HTTP.getCode(), HTTPRequestNode.class);
         nodeClazzMap.put(SLEEP.getCode(), SleepNode.class);
+        nodeClazzMap.put(LOOP.getCode(), LoopNode.class);
     }
 
     NodeType(String name, int code){

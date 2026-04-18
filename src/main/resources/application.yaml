@@ -17,4 +17,7 @@ spring:
     virtual:
       enabled: true
 workflow:
+  # Redis状态超时时间，默认为24 * 60 * 60 = 86400秒
   expire-time: 86400
+  # 结果处理线程超时时间，默认为 30 * 1000 = 30000毫秒
+  result-time-out: 600000

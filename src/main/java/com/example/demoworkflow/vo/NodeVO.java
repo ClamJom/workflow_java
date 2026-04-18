@@ -19,4 +19,6 @@ public class NodeVO {
     public int type;
 
     public List<ConfigVO> configs;
+
+    public String parent;
 }

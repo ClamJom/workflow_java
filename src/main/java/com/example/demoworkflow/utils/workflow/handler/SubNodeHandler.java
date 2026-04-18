@@ -5,12 +5,8 @@ import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 import com.example.demoworkflow.utils.workflow.result.WorkflowResult;
 import com.example.demoworkflow.utils.workflow.states.NodeStates;
 import com.example.demoworkflow.utils.workflow.states.WorkflowStates;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +14,15 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 
-@Service
+/**
+ * 专用于处理嵌套节点子节点的方法
+ */
 @Slf4j
-public class NodeHandler {
-    @Resource
-    private GlobalPool globalPool;
+public class SubNodeHandler {
+    private final GlobalPool globalPool;
 
-    @Autowired
-    private RedissonClient redissonClient;
-
-    private void logNodeProcessInfo(NodeImpl node, String message){
-        log.info("节点类型:{} 节点ID：{} 消息：{}", node.getNodeType(), node.nodeId, message);
+    public SubNodeHandler(GlobalPool globalPool) {
+        this.globalPool = globalPool;
     }
 
     private void putNodeState(NodeImpl node, int stateCode, String message){
@@ -58,7 +52,7 @@ public class NodeHandler {
         while(true){
             if(node.relatedNodes.isEmpty()) break;
             if(node.relatedNodes.stream().allMatch(item->{
-                Lock lock = redissonClient.getLock(item);
+                Lock lock = globalPool.redissonClient.getLock(item);
                 try {
                     lock.lock();
                     int pNodeState = globalPool.getNodeState(node.token, item);
@@ -85,36 +79,42 @@ public class NodeHandler {
         node.run();
     }
 
-    /**
-     * 处理下一个节点的运行逻辑，加锁是为了防止多分支指向这个节点时被调度两次
-     * @param node  节点
-     */
-    private void handlerNextNode(NodeImpl node){
-        Lock lock = redissonClient.getLock(node.nodeId);
+    private void handlerNextSubNode(NodeImpl node, NodeImpl parentNode, CountDownLatch latch){
+        Lock lock = globalPool.redissonClient.getLock(node.nodeId);
         try{
             lock.lock();
             if(globalPool.getNodeState(node.token, node.nodeId) != NodeStates.NULL) return;
-            Thread.ofVirtual().start(()->run(node));
+            Thread.ofVirtual().start(()->run(node, parentNode, latch));
         }finally {
             lock.unlock();
         }
     }
 
-    /**
-     * 处理节点运行完毕之后的逻辑
-     * @param node  节点
-     */
-    private void nodeAfter(NodeImpl node){
+    private void nodeAfter(NodeImpl node, NodeImpl parentNode, CountDownLatch latch){
         if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR ||
-                globalPool.getWorkflowState(node.getToken()) == WorkflowStates.NULL) return;
+                globalPool.getWorkflowState(node.getToken()) == WorkflowStates.NULL){
+            latch.countDown();
+            return;
+        }
+        if(node.nodeId.equals(parentNode.subEndNode.nodeId)){
+            Object outputs = parentNode.nodePool.get("outputs");
+            if (outputs == null) {
+                outputs = new ArrayList<>();
+                parentNode.nodePool.put("outputs", outputs);
+            }
+            Object subOutputs = node.nodePool.get("outputs");
+            ((List<Map<String, Object>>) outputs).add((Map<String, Object>) subOutputs);
+            latch.countDown();
+            return;
+        }
         if(globalPool.getNodeState(node.token, node.nodeId) != NodeStates.DISABLED) {
             globalPool.nodeDone(node.token, node.nodeId);
             putNodeState(node, NodeStates.DONE, "节点运行完毕："+node.nodeId);
             node.after();
             globalPool.merge(node.token, node.nodePool.getPool());
         }
-        for(NodeImpl nextNode: node.nextNodes){
-            handlerNextNode(nextNode);
+        for (NodeImpl nextNode: node.nextNodes){
+            handlerNextSubNode(nextNode, parentNode, latch);
         }
     }
 
@@ -133,17 +133,17 @@ public class NodeHandler {
                         .msg(e.getMessage())
                         .build());
         globalPool.workflowError(node.token);
-        log.error("节点运行出错", e);
     }
 
     @Async("workflow")
-    public void run(NodeImpl node){
+    public void run(NodeImpl node, NodeImpl parentNode, CountDownLatch latch){
         try{
             nodeBefore(node);
             nodeRun(node);
-            nodeAfter(node);
+            nodeAfter(node, parentNode, latch);
         }catch(Exception e){
             nodeError(node, e);
+            latch.countDown();
         }
     }
 }

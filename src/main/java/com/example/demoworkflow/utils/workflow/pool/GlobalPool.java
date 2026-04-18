@@ -31,8 +31,9 @@ public class GlobalPool {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
+    // 这个Redisson用作备用
     @Resource
-    private RedissonClient redissonClient;
+    public RedissonClient redissonClient;
 
     private final Map<String, Queue<WorkflowResult>> results = new ConcurrentHashMap<>();
 
@@ -156,8 +157,11 @@ public class GlobalPool {
     }
 
     private void updateNodeState(String token, String uuid, int nodeState){
-        Lock lock = redissonClient.getLock(nodeStateKeyFactory(uuid));
         update(token, nodeStateKeyFactory(uuid), nodeState);
+    }
+
+    public void deleteNodeState(String token, String uuid){
+        delete(token, nodeStateKeyFactory(uuid));
     }
 
     /**

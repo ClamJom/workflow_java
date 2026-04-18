@@ -44,6 +44,17 @@ public class NodeImpl implements Node {
 
     public List<NodeImpl> nextNodes = new ArrayList<>();
 
+    /**
+     * 指向父节点的ID，表明这个节点是某个可嵌套节点的子节点
+     */
+    public String parentNodeId = null;
+
+    /**
+     * 下面二者皆是为可嵌套节点做的准备
+     */
+    public NodeImpl subStartNode = null;
+    public NodeImpl subEndNode = null;
+
     public NodeImpl(GlobalPool globalPool){
         nodeId = UUID.randomUUID().toString();
         nodePool = new NodePool(nodeId);

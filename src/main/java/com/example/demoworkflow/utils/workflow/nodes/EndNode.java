@@ -64,6 +64,7 @@ public class EndNode extends NodeImpl{
                 .extData(outputMap)
                 .build();
         putWorkflowResult(outputResult);
+        nodePool.put("output", outputMap);
     }
 
     @Override

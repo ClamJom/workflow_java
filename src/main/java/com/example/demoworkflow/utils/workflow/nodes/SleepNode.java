@@ -3,6 +3,7 @@ package com.example.demoworkflow.utils.workflow.nodes;
 import com.example.demoworkflow.utils.types.ConfigTypes;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 import com.example.demoworkflow.vo.ConfigVO;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 

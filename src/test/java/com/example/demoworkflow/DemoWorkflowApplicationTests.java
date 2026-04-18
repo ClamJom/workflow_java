@@ -415,6 +415,82 @@ class DemoWorkflowApplicationTests {
     }
 
     @Test
+    void loopNodeTest(){
+        String workflowJSON = """
+        {
+          "name": "Test",
+          "nodes": [
+            {
+              "id": "test-start",
+              "name": "Start",
+              "type": 1
+            },
+            {
+              "id": "test-loop-node",
+              "name": "loop",
+              "type": 65543,
+              "configs":[
+                {
+                  "id": 1,
+                  "name": "loop",
+                  "type": "Number",
+                  "value": "10",
+                  "k": 1,
+                  "quantize": 0
+                }
+              ]
+            },
+            {
+              "id": "test-start-sub",
+              "name": "Start",
+              "type": 1,
+              "parent": "test-loop-node"
+            },
+            {
+                "id": "test-node-1",
+                "name": "hello",
+                "type": 3,
+                "parent": "test-loop-node",
+                "configs":[
+                {
+                    "id": 2,
+                    "name": "message",
+                    "type": "String",
+                    "value": "Hello, World!",
+                }
+                ]
+            },
+            {
+              "id": "test-end-sub",
+              "name": "End",
+              "type": 2,
+              "parent": "test-loop-node"
+            }
+            {
+              "id": "test-end",
+              "name": "End",
+              "type": 2
+            }
+          ],
+          "edges":[{
+            "from": "test-start",
+            "to": "test-loop-node",
+          },{
+            "from": "test-loop-node",
+            "to": "test-end",
+          },{
+            "from": "test-start-sub",
+            "to": "test-node-1",
+          },{
+            "from": "test-node-1",
+            "to": "test-end-sub",
+          }]
+        }
+        """;
+        workflowTest(workflowJSON);
+    }
+
+    @Test
     void mapConfigTest(){
         Map<String, Object> map = new HashMap<>();
         Map<String, String> subMap = new HashMap<>();

@@ -46,6 +46,8 @@ public class WorkflowHandler {
         // 一开始处理就需要将当前工作流的过期时间设置好，防止其长时间存在
         globalPool.expire(workflow.getToken());
         resultHandler.run(workflow, rsp);
+        if (globalPool.getWorkflowState(workflow.getToken()) == WorkflowStates.ERROR)
+            return;
         globalPool.pushWorkflowResult(workflow.getToken(), WorkflowResult.builder()
                 .token(workflow.getToken())
                 .msg("开始执行流程图")
@@ -72,6 +74,9 @@ public class WorkflowHandler {
     public void handler(Workflow workflow){
         globalPool.expire(workflow.getToken());
         resultHandler.run(workflow, sseHandler);
+        // 这个错误可能由前期预处理抛出，这种情况应当立刻停止后续工作，并通过结果处理线程返回错误信息
+        if (globalPool.getWorkflowState(workflow.getToken()) == WorkflowStates.ERROR)
+            return;
         globalPool.pushWorkflowResult(workflow.getToken(), WorkflowResult.builder()
                 .token(workflow.getToken())
                 .msg("开始执行流程图")

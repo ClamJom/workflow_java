@@ -205,6 +205,7 @@ function castToVueFlow(workflowVO, direction) {
         position: n.position || {x: 0, y: 0},
         data: {wnode: {...n}},
         label: n.name || '',
+        parentNode: n.parent || ''
     }));
 
     const vfEdges = wedges.map(e => ({
@@ -239,6 +240,7 @@ function castToWorkflowVO() {
             type: n.data?.wnode?.type || 0,
             configs: n.data?.wnode?.configs || [],
             position: n.position,
+            parent: n.parentNode
         })),
         edges: currentEdges.map(e => ({
             from: e.source,
@@ -312,7 +314,7 @@ function applyWorkflowResultToNodes(data) {
  * @param {{ nodes: Array<{id: string, name?: string, type: number}>, edges: Array<{from: string, to: string}> }} payload
  * @returns {{ valid: boolean, message: string, invalidNodeIds: string[] }}
  */
-function precheckWorkflow(payload) {
+function preCheckWorkflow(payload) {
     const fail = (message, invalidNodeIds = []) => ({
         valid: false,
         message,
@@ -455,10 +457,10 @@ async function handleRunWorkflow() {
     runDrawerOpen.value = true;
 
     const payload = castToWorkflowVO();
-    const precheck = precheckWorkflow(payload);
-    if (!precheck.valid) {
-        message.error(precheck.message);
-        applyPrecheckHighlight(precheck.invalidNodeIds || []);
+    const preCheck = preCheckWorkflow(payload);
+    if (!preCheck.valid) {
+        message.error(preCheck.message);
+        applyPrecheckHighlight(preCheck.invalidNodeIds || []);
         runDrawerOpen.value = false;
         return;
     }
