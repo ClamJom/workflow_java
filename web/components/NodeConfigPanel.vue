@@ -1,6 +1,20 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { Spin, Empty, Alert, Button, message, Select, Input, Space } from 'ant-design-vue';
+import {
+  Spin,
+  Empty,
+  Alert,
+  Button,
+  message,
+  Select,
+  Input,
+  Space,
+  Collapse,
+  InputNumber,
+  Switch,
+} from 'ant-design-vue';
+
+const CollapsePanel = Collapse.Panel;
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { getConfigComponent } from './configs/index.js';
 import api from '../api/index.js';
@@ -68,12 +82,50 @@ const pendingType = ref('String');
 const pendingName = ref('');
 const pendingDes = ref('');
 
+const pendingValue = ref('');
+const pendingOptions = ref('');
+const pendingMin = ref(0);
+const pendingMax = ref(0);
+const pendingK = ref(1);
+const pendingQuantize = ref(0);
+const pendingRequired = ref(false);
+const pendingParent = ref(0);
+
+/** 添加配置「高级选项」折叠：空数组表示默认收起 */
+const addAdvancedCollapseKeys = ref([]);
+
+function resetPendingAdvancedFields() {
+  pendingValue.value = '';
+  pendingOptions.value = '';
+  pendingMin.value = 0;
+  pendingMax.value = 0;
+  pendingK.value = 1;
+  pendingQuantize.value = 0;
+  pendingRequired.value = false;
+  pendingParent.value = 0;
+}
+
 const typeOptionsForNode = computed(() => {
   if (props.nodeCode === CONDITION_NODE_CODE) {
     return CONFIG_TYPE_OPTIONS.filter(o => o.value === 'Condition');
   }
   return CONFIG_TYPE_OPTIONS;
 });
+
+const pendingParentOptions = computed(() => {
+  const base = [{ value: 0, label: '无' }];
+  return base.concat(
+    configs.value.map((c) => ({
+      value: c.id,
+      label: `${c.name} (id: ${c.id})`,
+    }))
+  );
+});
+
+const showPendingOptionsField = computed(() => pendingType.value === 'Select');
+const showPendingNumberRangeFields = computed(
+  () => pendingType.value === 'Number' || pendingType.value === 'Slider'
+);
 
 function defaultValueForType(type) {
   switch (type) {
@@ -129,7 +181,18 @@ function resetPendingForm() {
     pendingName.value = '';
     pendingDes.value = '';
   }
+  resetPendingAdvancedFields();
 }
+
+watch(pendingType, (t) => {
+  if (t !== 'Select') pendingOptions.value = '';
+  if (t !== 'Number' && t !== 'Slider') {
+    pendingMin.value = 0;
+    pendingMax.value = 0;
+    pendingK.value = 1;
+    pendingQuantize.value = 0;
+  }
+});
 
 function isConfigVisible(config) {
   if (!config.parent || config.parent === 0) return true;
@@ -214,20 +277,63 @@ function addPendingConfig() {
     return;
   }
 
+  const trimmedCustomValue = (pendingValue.value || '').trim();
+  const value =
+    trimmedCustomValue !== '' ? trimmedCustomValue : defaultValueForType(type);
+
+  if (
+    trimmedCustomValue !== '' &&
+    (type === 'List' || type === 'Map' || type === 'Condition')
+  ) {
+    try {
+      JSON.parse(trimmedCustomValue);
+    } catch {
+      message.warning('默认值必须是合法 JSON');
+      return;
+    }
+  }
+
+  const optionsTrimmed = (pendingOptions.value || '').trim();
+  if (type === 'Select' && optionsTrimmed) {
+    try {
+      const parsed = JSON.parse(optionsTrimmed);
+      if (!Array.isArray(parsed)) {
+        message.warning('下拉选项需为 JSON 数组，例如 ["选项A","选项B"]');
+        return;
+      }
+    } catch {
+      message.warning('下拉选项需为合法 JSON 数组');
+      return;
+    }
+  }
+
+  let k = Number(pendingK.value);
+  if (!Number.isFinite(k) || k < 1) k = 1;
+  if (k > 1000000) k = 1000000;
+
+  let quantize = Number(pendingQuantize.value);
+  if (!Number.isFinite(quantize) || quantize < 0) quantize = 0;
+
+  const useNumberMeta = type === 'Number' || type === 'Slider';
+
   const row = {
     id: Date.now(),
     name,
     des: (pendingDes.value || '').trim() || name,
     type,
-    value: defaultValueForType(type),
-    required: false,
-    parent: 0,
-    k: 1,
-    quantize: 0,
-    _rowKey: generateUUID()
+    value,
+    min: useNumberMeta ? (pendingMin.value ?? 0) : 0,
+    max: useNumberMeta ? (pendingMax.value ?? 0) : 0,
+    k: useNumberMeta ? k : 1,
+    quantize: useNumberMeta ? quantize : 0,
+    required: !!pendingRequired.value,
+    parent: pendingParent.value ?? 0,
+    _rowKey: generateUUID(),
   };
+  if (optionsTrimmed) row.options = optionsTrimmed;
+
   configs.value.push(row);
-  configValues[name] = defaultValueForType(type);
+  configValues[name] = value;
   resetPendingForm();
 }
 
@@ -383,6 +489,78 @@ onMounted(() => {
               placeholder="可选，用于界面展示"
             />
           </div>
+          <Collapse
+            v-model:activeKey="addAdvancedCollapseKeys"
+            :bordered="false"
+            class="add-advanced-collapse"
+          >
+            <CollapsePanel key="advanced" header="高级选项">
+              <div class="add-advanced-inner">
+                <div class="add-config-line">
+                  <span class="add-label add-label--wide">默认值</span>
+                  <Input.TextArea
+                    v-model:value="pendingValue"
+                    :rows="2"
+                    placeholder="留空则按类型使用默认初始值"
+                  />
+                </div>
+                <div v-if="showPendingOptionsField" class="add-config-line">
+                  <span class="add-label add-label--wide">选项</span>
+                  <Input.TextArea
+                    v-model:value="pendingOptions"
+                    :rows="2"
+                    placeholder='JSON 数组，如 ["选项A","选项B"]'
+                  />
+                </div>
+                <template v-if="showPendingNumberRangeFields">
+                  <div class="add-config-line">
+                    <span class="add-label add-label--wide">最小</span>
+                    <InputNumber
+                      v-model:value="pendingMin"
+                      class="add-field-grow"
+                    />
+                  </div>
+                  <div class="add-config-line">
+                    <span class="add-label add-label--wide">最大</span>
+                    <InputNumber
+                      v-model:value="pendingMax"
+                      class="add-field-grow"
+                    />
+                  </div>
+                  <div class="add-config-line">
+                    <span class="add-label add-label--wide">除数 k</span>
+                    <InputNumber
+                      v-model:value="pendingK"
+                      :min="1"
+                      :max="1000000"
+                      class="add-field-grow"
+                    />
+                  </div>
+                  <div class="add-config-line">
+                    <span class="add-label add-label--wide">精度</span>
+                    <InputNumber
+                      v-model:value="pendingQuantize"
+                      :min="0"
+                      class="add-field-grow"
+                    />
+                  </div>
+                </template>
+                <div class="add-config-line add-config-line--switch">
+                  <span class="add-label add-label--wide">必填</span>
+                  <Switch v-model:checked="pendingRequired" />
+                </div>
+                <div class="add-config-line">
+                  <span class="add-label add-label--wide">父配置</span>
+                  <Select
+                    v-model:value="pendingParent"
+                    :options="pendingParentOptions"
+                    class="add-field-grow"
+                    placeholder="依赖某条配置显示（布尔为 true 时显示）"
+                  />
+                </div>
+              </div>
+            </CollapsePanel>
+          </Collapse>
           <Button type="dashed" block @click="addPendingConfig">
             <PlusOutlined />
             添加此项
@@ -521,6 +699,48 @@ onMounted(() => {
   font-size: 12px;
   color: #8c8c8c;
   padding-top: 4px;
+}
+
+.add-advanced-collapse {
+  width: 100%;
+  background: transparent;
+}
+
+.add-advanced-collapse :deep(.ant-collapse-item) {
+  border: none;
+}
+
+.add-advanced-collapse :deep(.ant-collapse-header) {
+  padding: 8px 0;
+  font-size: 12px;
+  color: #595959;
+}
+
+.add-advanced-collapse :deep(.ant-collapse-content-box) {
+  padding: 0 0 4px;
+}
+
+.add-advanced-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-advanced-inner .add-label--wide {
+  width: 52px;
+}
+
+.add-field-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-config-line--switch {
+  align-items: center;
+}
+
+.add-config-line--switch .add-label {
+  padding-top: 0;
 }
 
 .add-hint {
