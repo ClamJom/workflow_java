@@ -4,6 +4,7 @@ import {
     VueFlow,
     useVueFlow,
     MarkerType,
+    getIncomers,
 } from '@vue-flow/core';
 import {Controls} from '@vue-flow/controls';
 import {MiniMap} from '@vue-flow/minimap';
@@ -15,7 +16,6 @@ import {
     Dropdown,
     Menu,
     Input,
-    Drawer,
 } from 'ant-design-vue';
 import {
     PlusOutlined,
@@ -25,15 +25,18 @@ import {
     PlayCircleOutlined,
 } from '@ant-design/icons-vue';
 
-import {nodeTypes, getVueFlowNodeType, NODE_TYPE_CODE} from './nodes/index.js';
+import {nodeTypes, getVueFlowNodeType, NODE_TYPE_CODE, NESTABLE_FLAG, isNestableNodeType} from './nodes/index.js';
 import NodeConfigPanel from './NodeConfigPanel.vue';
-import {autoLayoutVueFlow} from '../utils/layout.js';
+import {autoLayoutVueFlowNested, NODE_WIDTH, NODE_HEIGHT} from '../utils/layout.js';
 import api from '../api/index.js';
 import {generateUUID} from '../utils/token.js';
 
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
+
+/** 边默认叠放顺序，便于在子图内点到边线 */
+const defaultEdgeOpts = {zIndex: 1001};
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -90,8 +93,11 @@ const configDrawerVisible = ref(false);
 const nodeTypeList = ref([]);
 /** 保存中状态 */
 const saving = ref(false);
-/** 配置侧边栏宽度（px） */
+/** 右侧栏宽度（px），配置区与运行日志共用 */
 const configPanelWidth = ref(360);
+
+/** 与画布同级的右侧栏（节点配置 / 运行日志）是否显示 */
+const showSideRail = computed(() => configDrawerVisible.value || runDrawerOpen.value);
 /** 是否正在拖拽调整侧边栏宽度 */
 let isDraggingPanel = false;
 /** 拖拽开始时的鼠标 X 坐标 */
@@ -130,7 +136,7 @@ const nodeOutputsByTypeCache = new Map();
  * @returns {Object[]} Map 的键名列表
  */
 function getStartNodeMapKeys(wnode) {
-    const configs = wnode?.configs;
+    const configs = wnode?.configs || [];
     return configs.map(item => {
       return {
         name: item["name"],
@@ -146,11 +152,12 @@ function getStartNodeMapKeys(wnode) {
 const graphTopologySig = computed(() => {
     const ns = getNodes.value.map(n => {
         const typ = n.data?.wnode?.type ?? '';
+        const par = n.parentNode || '';
         if (typ === NODE_TYPE_CODE.START) {
             const keys = getStartNodeMapKeys(n.data?.wnode).sort().join(',');
-            return `${n.id}:${typ}:${keys}`;
+            return `${n.id}:${typ}:${par}:${keys}`;
         }
-        return `${n.id}:${typ}`;
+        return `${n.id}:${typ}:${par}`;
     }).sort().join(',');
     const es = getEdges.value.map(e => `${e.source}-${e.target}`).sort().join(',');
     return `${ns}|${es}`;
@@ -187,6 +194,33 @@ const selectedNodeData = computed(() => {
 // ─── 工具函数 ─────────────────────────────────────────────────────────────────
 
 /**
+ * Vue Flow 要求父节点在子节点之前出现在 nodes 数组中
+ * @param {Array} nodes
+ * @returns {Array}
+ */
+function sortVueFlowNodesParentFirst(nodes) {
+    const byId = new Map(nodes.map(n => [n.id, n]));
+    function depth(id) {
+        let d = 0;
+        let cur = byId.get(id);
+        while (cur?.parentNode) {
+            d++;
+            cur = byId.get(cur.parentNode);
+        }
+        return d;
+    }
+    const roots = nodes.filter(n => !n.parentNode);
+    const childs = nodes.filter(n => n.parentNode);
+    childs.sort((a, b) => {
+        const da = depth(a.id);
+        const db = depth(b.id);
+        if (da !== db) return da - db;
+        return String(a.parentNode).localeCompare(String(b.parentNode));
+    });
+    return [...roots, ...childs];
+}
+
+/**
  * 将后端 WorkflowVO 转换为 Vue-Flow 格式
  * @param {Object} workflowVO - 后端返回的工作流数据
  * @param {'horizontal'|'vertical'} direction - 布局方向
@@ -199,14 +233,21 @@ function castToVueFlow(workflowVO, direction) {
     // 检查是否所有节点都有位置信息
     const needLayout = wnodes.some(n => !n.position);
 
-    let vfNodes = wnodes.map(n => ({
-        id: n.id,
-        type: getVueFlowNodeType(n.type),
-        position: n.position || {x: 0, y: 0},
-        data: {wnode: {...n}},
-        label: n.name || '',
-        parentNode: n.parent || ''
-    }));
+    let vfNodes = wnodes.map(n => {
+        const raw = {...n};
+        const nodeStyle = raw.style;
+        delete raw.style;
+        delete raw.position;
+        return {
+            id: n.id,
+            type: getVueFlowNodeType(n.type),
+            position: n.position || {x: 0, y: 0},
+            data: {wnode: raw},
+            label: n.name || '',
+            parentNode: n.parent || '',
+            ...(nodeStyle && typeof nodeStyle === 'object' ? {style: nodeStyle} : {}),
+        };
+    });
 
     const vfEdges = wedges.map(e => ({
         id: `${e.from}-${e.to}-${generateUUID()}`,
@@ -216,12 +257,32 @@ function castToVueFlow(workflowVO, direction) {
         ...(e.fromHandle ? {sourceHandle: e.fromHandle} : {}),
     }));
 
-    // 若需要自动布局，则计算位置
+    // 若需要自动布局，则计算位置（含嵌套子图）
     if (needLayout) {
-        vfNodes = autoLayoutVueFlow(vfNodes, vfEdges, direction);
+        vfNodes = autoLayoutVueFlowNested(vfNodes, vfEdges, direction);
     }
 
+    vfNodes = sortVueFlowNodesParentFirst(vfNodes);
+
     return {nodes: vfNodes, edges: vfEdges};
+}
+
+/**
+ * 合并 Vue Flow 测量得到的 dimensions 到 style，便于与 NodeVO.style 一并写入 JSON
+ * （避免仅有测量宽高、style 为空时无法保存大小）
+ * @param {object} n - Vue Flow 节点
+ * @returns {Record<string, string>|undefined}
+ */
+function mergeStyleWithDimensionsForSave(n) {
+    const fromStyle = n.style && typeof n.style === 'object' ? {...n.style} : {};
+    const d = n.dimensions;
+    if (d && typeof d.width === 'number' && d.width > 0 && fromStyle.width == null) {
+        fromStyle.width = `${Math.round(d.width)}px`;
+    }
+    if (d && typeof d.height === 'number' && d.height > 0 && fromStyle.height == null) {
+        fromStyle.height = `${Math.round(d.height)}px`;
+    }
+    return Object.keys(fromStyle).length ? fromStyle : undefined;
 }
 
 /**
@@ -234,14 +295,22 @@ function castToWorkflowVO() {
 
     return {
         name: workflowName.value,
-        nodes: currentNodes.map(n => ({
-            id: n.id,
-            name: n.data?.wnode?.name || '',
-            type: n.data?.wnode?.type || 0,
-            configs: n.data?.wnode?.configs || [],
-            position: n.position,
-            parent: n.parentNode
-        })),
+        nodes: currentNodes.map(n => {
+            const pos = n.position || {x: 0, y: 0};
+            const style = mergeStyleWithDimensionsForSave(n);
+            return {
+                id: n.id,
+                name: n.data?.wnode?.name || '',
+                type: n.data?.wnode?.type || 0,
+                configs: n.data?.wnode?.configs || [],
+                position: {
+                    x: typeof pos.x === 'number' ? pos.x : 0,
+                    y: typeof pos.y === 'number' ? pos.y : 0,
+                },
+                parent: n.parentNode,
+                ...(style ? {style} : {}),
+            };
+        }),
         edges: currentEdges.map(e => ({
             from: e.source,
             to: e.target,
@@ -330,24 +399,26 @@ function preCheckWorkflow(payload) {
     }
 
     const nodeIds = new Set(nodes.map(n => n.id));
-    const starts = nodes.filter(n => n.type === NODE_TYPE_CODE.START);
-    const ends = nodes.filter(n => n.type === NODE_TYPE_CODE.END);
+    const hasParent = (n) => !!(n.parent && String(n.parent).length);
 
-    if (starts.length === 0) {
+    const rootStarts = nodes.filter(n => n.type === NODE_TYPE_CODE.START && !hasParent(n));
+    const rootEnds = nodes.filter(n => n.type === NODE_TYPE_CODE.END && !hasParent(n));
+
+    if (rootStarts.length === 0) {
         return fail('工作流必须包含一个起始节点', []);
     }
-    if (starts.length > 1) {
-        return fail('工作流只能有一个起始节点', starts.map(n => n.id));
+    if (rootStarts.length > 1) {
+        return fail('工作流只能有一个起始节点', rootStarts.map(n => n.id));
     }
-    if (ends.length === 0) {
+    if (rootEnds.length === 0) {
         return fail('工作流必须包含一个结束节点', []);
     }
-    if (ends.length > 1) {
-        return fail('工作流只能有一个结束节点', ends.map(n => n.id));
+    if (rootEnds.length > 1) {
+        return fail('工作流只能有一个结束节点', rootEnds.map(n => n.id));
     }
 
-    const startId = starts[0].id;
-    const endId = ends[0].id;
+    const startId = rootStarts[0].id;
+    const endId = rootEnds[0].id;
 
     const outAdj = {};
     const inCount = {};
@@ -374,6 +445,7 @@ function preCheckWorkflow(payload) {
     const badIn = [];
     for (const n of nodes) {
         if (n.id === startId) continue;
+        if (n.type === NODE_TYPE_CODE.START && hasParent(n)) continue;
         if (inCount[n.id] < 1) badIn.push(n.id);
     }
     if (badIn.length) {
@@ -391,6 +463,7 @@ function preCheckWorkflow(payload) {
     const badOut = [];
     for (const n of nodes) {
         if (n.id === endId) continue;
+        if (n.type === NODE_TYPE_CODE.END && hasParent(n)) continue;
         if (outCount[n.id] < 1) badOut.push(n.id);
     }
     if (badOut.length) {
@@ -444,7 +517,7 @@ function preCheckWorkflow(payload) {
 }
 
 /**
- * 使用当前画布运行工作流（SSE），并在 Drawer 中展示日志
+ * 使用当前画布运行工作流（SSE），并在右侧栏展示日志
  */
 async function handleRunWorkflow() {
     if (runningWorkflow.value) return;
@@ -455,6 +528,9 @@ async function handleRunWorkflow() {
     clearNodeRunStates();
     runLogEntries.value = [];
     runDrawerOpen.value = true;
+    if (!configDrawerVisible.value) {
+        configPanelWidth.value = Math.max(configPanelWidth.value, 400);
+    }
 
     const payload = castToWorkflowVO();
     const preCheck = preCheckWorkflow(payload);
@@ -518,38 +594,136 @@ async function handleRunWorkflow() {
 }
 
 /**
- * 从当前节点沿边 **反向** 做 BFS，得到所有祖先节点（含起始节点及所有分叉上的节点），顺序为近→远。
- * @param {string} nodeId - 当前节点
- * @param {Array<{source: string, target: string}>} edges - 画布边
- * @returns {string[]} 祖先节点 id 列表（不含 nodeId 自身）
+ * 按 id 查找节点（统一为字符串比较，避免边与节点的 id 类型不一致导致查不到边）
+ * @param {Array} nodes
+ * @param {string} id
  */
-function collectUpstreamNodeIdsOrdered(nodeId, edges) {
-    const reverseAdj = {};
-    edges.forEach(e => {
-        if (!reverseAdj[e.target]) reverseAdj[e.target] = [];
-        reverseAdj[e.target].push(e.source);
-    });
+function findNodeById(nodes, id) {
+    if (id == null || id === '') return undefined;
+    const s = String(id);
+    return nodes.find(n => String(n.id) === s);
+}
 
-    const visited = new Set();
+/**
+ * 在同一 parent 子图内从 nodeId 反向 BFS，得到祖先 id（近→远，不含自身）
+ * 使用 @vue-flow/core 的 getIncomers，与画布边连接判定一致（避免手写邻接表与 Vue Flow 的 id/嵌套处理不一致，导致 Loop 等容器上游池为空）
+ */
+function collectUpstreamNodeIdsScoped(nodeId, edges, nodes, scopeParent) {
+    const sp = scopeParent == null || scopeParent === '' ? '' : String(scopeParent);
+    const start = findNodeById(nodes, nodeId);
+    if (!start) return [];
+    const nid = String(nodeId);
+    const norm = (n) => {
+        const p = n.parentNode;
+        if (p == null || p === '') return '';
+        return String(p);
+    };
+    const inScope = n => norm(n) === sp;
+
     const order = [];
-    const queue = [nodeId];
+    const visited = new Set();
+    const queue = [start];
+
     while (queue.length > 0) {
         const cur = queue.shift();
-        if (visited.has(cur)) continue;
-        visited.add(cur);
-        if (cur !== nodeId) {
-            order.push(cur);
+        const curId = String(cur.id);
+        if (visited.has(curId)) continue;
+        visited.add(curId);
+
+        if (curId !== nid && inScope(cur)) {
+            order.push(curId);
         }
-        const parents = reverseAdj[cur] || [];
-        parents.forEach(p => {
-            if (!visited.has(p)) queue.push(p);
-        });
+
+        const incomers = getIncomers(cur, nodes, edges) || [];
+        for (const inc of incomers) {
+            if (!inc || !inScope(inc)) continue;
+            const iid = String(inc.id);
+            if (!visited.has(iid)) {
+                queue.push(inc);
+            }
+        }
     }
     return order;
 }
 
 /**
- * 构建指定节点的上游变量池：遍历至所有祖先（含起始节点），汇总各节点可暴露变量
+ * 将单个节点的可引用变量追加到 pool
+ */
+async function appendNodeOutputsToPool(node, pool) {
+    const upstreamId = node.id;
+    const nodeCode = node.data?.wnode?.type;
+    if (nodeCode == null) return;
+
+    if (nodeCode === NODE_TYPE_CODE.START) {
+        const variables = getStartNodeMapKeys(node.data?.wnode);
+        variables.forEach((item) => {
+            pool.push({
+                name: `${upstreamId}:${item.name}`,
+                des: item.des,
+                type: item.type,
+            });
+        });
+        return;
+    }
+
+    let outputs = nodeOutputsByTypeCache.get(nodeCode);
+    if (outputs === undefined) {
+        const res = await api.workflow.getNodeOutputs(nodeCode);
+        outputs = res.data || [];
+        nodeOutputsByTypeCache.set(nodeCode, outputs);
+    }
+
+    outputs.forEach(out => {
+        pool.push({
+            name: `${upstreamId}:${out.name}`,
+            des: out.des || out.name,
+            type: out.type || 'String',
+        });
+    });
+}
+
+/**
+ * 沿 parentNode 链收集所有循环容器祖先 id（自内向外的顺序）
+ * @param {string} nodeId
+ * @param {Array} currentNodes
+ * @returns {string[]}
+ */
+function collectLoopAncestorIds(nodeId, currentNodes) {
+    const ids = [];
+    let cur = findNodeById(currentNodes, nodeId);
+    while (cur?.parentNode) {
+        const pid = cur.parentNode;
+        const parent = findNodeById(currentNodes, pid);
+        if (parent?.data?.wnode?.type === NODE_TYPE_CODE.LOOP) {
+            ids.push(String(pid));
+        }
+        cur = parent;
+    }
+    return ids;
+}
+
+/**
+ * 为处于循环子图内的节点追加 LoopNode.putLoopIIntoPool 写入的变量键：`{loopNodeId}:loop_i`
+ * @param {string} nodeId
+ * @param {Array<{name: string, des: string, type: string}>} pool
+ * @param {Array} currentNodes
+ */
+function appendLoopIterationVarsToPool(nodeId, pool, currentNodes) {
+    const existing = new Set(pool.map(p => p.name));
+    for (const loopId of collectLoopAncestorIds(nodeId, currentNodes)) {
+        const name = `${loopId}:loop_i`;
+        if (existing.has(name)) continue;
+        existing.add(name);
+        pool.push({
+            name,
+            des: '当前循环下标（从 0 开始），与 LoopNode 运行时注入一致',
+            type: 'Number',
+        });
+    }
+}
+
+/**
+ * 构建指定节点的上游变量池：嵌套节点先继承可嵌套父节点（如循环）在主干上的上游池，再合并子图内上游
  * @param {string} nodeId - 目标节点 ID
  * @returns {Promise<Array<{name: string, des: string, type: string}>>}
  */
@@ -557,42 +731,28 @@ async function buildUpstreamPoolAsync(nodeId) {
     const currentEdges = getEdges.value;
     const currentNodes = getNodes.value;
 
-    const upstreamOrder = collectUpstreamNodeIdsOrdered(nodeId, currentEdges);
+    const node = findNodeById(currentNodes, nodeId);
+    if (!node) return [];
 
-    const pool = [];
-    for (const upstreamId of upstreamOrder) {
-        const node = currentNodes.find(n => n.id === upstreamId);
-        if (!node) continue;
-        const nodeCode = node.data?.wnode?.type;
-        /** 仅跳过无类型节点；0 为合法枚举值需保留 */
-        if (nodeCode == null) continue;
-
-        if (nodeCode === NODE_TYPE_CODE.START) {
-            const variables = getStartNodeMapKeys(node.data?.wnode);
-            variables.forEach((item) => {
-                pool.push({
-                    name: `${upstreamId}:${item["name"]}`,
-                    des: item["des"],
-                    type: item["type"],
-                });
-            });
-            continue;
+    const parentId = node.parentNode || '';
+    let inherited = [];
+    if (parentId) {
+        const pnode = findNodeById(currentNodes, parentId);
+        const pCode = pnode?.data?.wnode?.type;
+        if (pCode != null && (pCode & NESTABLE_FLAG) !== 0) {
+            inherited = await buildUpstreamPoolAsync(String(parentId));
         }
+    }
 
-        let outputs = nodeOutputsByTypeCache.get(nodeCode);
-        if (outputs === undefined) {
-            const res = await api.workflow.getNodeOutputs(nodeCode);
-            outputs = res.data || [];
-            nodeOutputsByTypeCache.set(nodeCode, outputs);
-        }
+    const scopeKey = parentId || '';
+    const innerOrder = collectUpstreamNodeIdsScoped(String(node.id), currentEdges, currentNodes, scopeKey);
 
-        outputs.forEach(out => {
-            pool.push({
-                name: `${upstreamId}:${out.name}`,
-                des: out.des || out.name,
-                type: out.type || 'String',
-            });
-        });
+    const pool = [...inherited];
+    appendLoopIterationVarsToPool(nodeId, pool, currentNodes);
+    for (const upstreamId of innerOrder) {
+        const n = findNodeById(currentNodes, upstreamId);
+        if (!n) continue;
+        await appendNodeOutputsToPool(n, pool);
     }
     return pool;
 }
@@ -667,37 +827,161 @@ async function saveWorkflow() {
 // ─── 节点操作 ─────────────────────────────────────────────────────────────────
 
 /**
+ * 若当前选中可嵌套容器（如循环），则在其内部添加子节点时返回该容器 id
+ * @returns {string|null}
+ */
+function getNestableParentIdForAdd() {
+    if (!selectedNodeId.value) return null;
+    const n = findNode(selectedNodeId.value);
+    if (!n) return null;
+    const c = n.data?.wnode?.type;
+    if (c != null && isNestableNodeType(c)) {
+        return n.id;
+    }
+    return null;
+}
+
+/**
  * 添加新节点
  * @param {Object} nodeType - 节点类型对象 { code, name, type }
  */
 function addNode(nodeType) {
     const code = nodeType.code;
+    let nestParentId = getNestableParentIdForAdd();
 
-    // StartNode/EndNode 唯一性约束
+    const hasRootStart = getNodes.value.some(n =>
+        n.data?.wnode?.type === NODE_TYPE_CODE.START && !n.parentNode);
+    const hasRootEnd = getNodes.value.some(n =>
+        n.data?.wnode?.type === NODE_TYPE_CODE.END && !n.parentNode);
+
+    // 根图缺少起始/结束时优先补在根部，避免仅因选中循环而被当成「子图内添加」
+    if (code === NODE_TYPE_CODE.START && !hasRootStart) {
+        nestParentId = null;
+    }
+    if (code === NODE_TYPE_CODE.END && !hasRootEnd) {
+        nestParentId = null;
+    }
+
+    if (code === NODE_TYPE_CODE.LOOP) {
+        const loopId = generateUUID();
+        const subStartId = generateUUID();
+        const subEndId = generateUUID();
+        const baseX = 100 + Math.random() * 200;
+        const baseY = 100 + Math.random() * 200;
+        addNodes([
+            {
+                id: loopId,
+                type: 'loop',
+                position: {x: baseX, y: baseY},
+                style: {width: '560px', height: '340px'},
+                data: {
+                    wnode: {
+                        id: loopId,
+                        name: nodeType.name,
+                        type: code,
+                        configs: [],
+                    },
+                    outputs: [],
+                },
+                label: nodeType.name,
+                zIndex: 0,
+            },
+            {
+                id: subStartId,
+                type: 'start',
+                parentNode: loopId,
+                position: {x: 40, y: 100},
+                extent: 'parent',
+                data: {
+                    wnode: {
+                        id: subStartId,
+                        name: '开始',
+                        type: NODE_TYPE_CODE.START,
+                        configs: [],
+                    },
+                    outputs: [],
+                },
+                label: '开始',
+                zIndex: 1,
+            },
+            {
+                id: subEndId,
+                type: 'end',
+                parentNode: loopId,
+                position: {x: 280, y: 100},
+                extent: 'parent',
+                data: {
+                    wnode: {
+                        id: subEndId,
+                        name: '结束',
+                        type: NODE_TYPE_CODE.END,
+                        configs: [],
+                    },
+                    outputs: [],
+                },
+                label: '结束',
+                zIndex: 1,
+            },
+        ]);
+        addEdges([{
+            id: `${subStartId}-${subEndId}-${generateUUID()}`,
+            source: subStartId,
+            target: subEndId,
+            markerEnd: MarkerType.ArrowClosed,
+        }]);
+        return;
+    }
+
     if (code === NODE_TYPE_CODE.START) {
-        const existing = getNodes.value.find(n => n.data?.wnode?.type === NODE_TYPE_CODE.START);
-        if (existing) {
-            message.warning('每个工作流只允许拥有一个起始节点');
-            return;
+        if (hasRootStart) {
+            if (nestParentId) {
+                const existing = getNodes.value.find(n =>
+                    n.data?.wnode?.type === NODE_TYPE_CODE.START && n.parentNode === nestParentId);
+                if (existing) {
+                    message.warning('该循环内已有起始节点');
+                    return;
+                }
+            } else {
+                message.warning('每个工作流只允许拥有一个起始节点');
+                return;
+            }
         }
     }
     if (code === NODE_TYPE_CODE.END) {
-        const existing = getNodes.value.find(n => n.data?.wnode?.type === NODE_TYPE_CODE.END);
-        if (existing) {
-            message.warning('每个工作流只允许拥有一个结束节点');
-            return;
+        if (hasRootEnd) {
+            if (nestParentId) {
+                const existing = getNodes.value.find(n =>
+                    n.data?.wnode?.type === NODE_TYPE_CODE.END && n.parentNode === nestParentId);
+                if (existing) {
+                    message.warning('该循环内已有结束节点');
+                    return;
+                }
+            } else {
+                message.warning('每个工作流只允许拥有一个结束节点');
+                return;
+            }
         }
     }
 
     const nodeId = generateUUID();
+    let position = {
+        x: 100 + Math.random() * 200,
+        y: 100 + Math.random() * 200,
+    };
+    let parentNode;
+
+    if (nestParentId) {
+        parentNode = nestParentId;
+        const siblings = getNodes.value.filter(n => n.parentNode === nestParentId);
+        const idx = siblings.length;
+        position = {x: 120 + idx * 36, y: 100};
+    }
+
     const newNode = {
         id: nodeId,
         type: getVueFlowNodeType(code),
-        // 新节点放置在画布中心偏右下方
-        position: {
-            x: 100 + Math.random() * 200,
-            y: 100 + Math.random() * 200,
-        },
+        position,
+        ...(parentNode ? {parentNode} : {}),
         data: {
             wnode: {
                 id: nodeId,
@@ -708,9 +992,162 @@ function addNode(nodeType) {
             outputs: [],
         },
         label: nodeType.name,
+        ...(parentNode ? {zIndex: 1} : {}),
     };
 
     addNodes([newNode]);
+}
+
+// ─── 嵌套拖拽：拖入 / 拖出可嵌套节点 ─────────────────────────────────────────
+
+/**
+ * 自根到当前节点的链（含自身）
+ */
+function getAncestorsChain(nodeId, nodeList) {
+    const rev = [];
+    let cur = nodeList.find(n => n.id === nodeId);
+    while (cur) {
+        rev.push(cur);
+        if (!cur.parentNode) break;
+        cur = nodeList.find(n => n.id === cur.parentNode);
+    }
+    return rev.reverse();
+}
+
+function getAbsolutePosition(nodeId, nodeList) {
+    const chain = getAncestorsChain(nodeId, nodeList);
+    let x = 0;
+    let y = 0;
+    chain.forEach(c => {
+        x += c.position.x;
+        y += c.position.y;
+    });
+    return {x, y};
+}
+
+function parsePixelSize(style) {
+    const st = style || {};
+    const w = parseFloat(String(st.width || '').replace(/px/g, ''));
+    const h = parseFloat(String(st.height || '').replace(/px/g, ''));
+    return {
+        w: Number.isFinite(w) && w > 0 ? w : NODE_WIDTH,
+        h: Number.isFinite(h) && h > 0 ? h : NODE_HEIGHT,
+    };
+}
+
+function getNodePixelSize(node) {
+    const code = node.data?.wnode?.type;
+    if (code != null && isNestableNodeType(code)) {
+        return parsePixelSize(node.style);
+    }
+    return {w: NODE_WIDTH, h: NODE_HEIGHT};
+}
+
+function pointInRect(px, py, rx, ry, rw, rh) {
+    return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
+}
+
+/** 不能将 dragged 拖入自身或其后代节点内 */
+function cannotNestDraggedInto(draggedId, candidateParentId, nodeList) {
+    if (!candidateParentId) return false;
+    if (candidateParentId === draggedId) return true;
+    let cur = nodeList.find(n => n.id === candidateParentId);
+    while (cur?.parentNode) {
+        if (cur.parentNode === draggedId) return true;
+        cur = nodeList.find(n => n.id === cur.parentNode);
+    }
+    return false;
+}
+
+/**
+ * 返回包含 (cx,cy) 的最深层可嵌套容器 id（优先内层循环）
+ */
+function findDeepestContainingNestable(cx, cy, draggedId, nodeList) {
+    const candidates = nodeList.filter(n => {
+        const code = n.data?.wnode?.type;
+        if (code == null || !isNestableNodeType(code)) return false;
+        if (n.id === draggedId) return false;
+        return !cannotNestDraggedInto(draggedId, n.id, nodeList);
+    });
+
+    candidates.sort((a, b) =>
+        getAncestorsChain(b.id, nodeList).length - getAncestorsChain(a.id, nodeList).length);
+
+    for (const c of candidates) {
+        const abs = getAbsolutePosition(c.id, nodeList);
+        const {w, h} = getNodePixelSize(c);
+        if (pointInRect(cx, cy, abs.x, abs.y, w, h)) {
+            return c.id;
+        }
+    }
+    return null;
+}
+
+function isInnerFixedStartEnd(node) {
+    const t = node.data?.wnode?.type;
+    const p = node.parentNode;
+    return !!(p && (t === NODE_TYPE_CODE.START || t === NODE_TYPE_CODE.END));
+}
+
+function isRootStartOrEnd(node) {
+    const t = node.data?.wnode?.type;
+    return !node.parentNode && (t === NODE_TYPE_CODE.START || t === NODE_TYPE_CODE.END);
+}
+
+function disconnectEdgesForNode(nodeId) {
+    const toRemove = getEdges.value.filter(e => e.source === nodeId || e.target === nodeId);
+    if (toRemove.length) {
+        removeEdges(toRemove);
+    }
+}
+
+/**
+ * 拖放结束时：若进入或离开可嵌套区域则重挂 parentNode 并断开与该节点相连的旧边
+ */
+function onNodeDragStop({node: graphNode, nodes: draggedList}) {
+    if (isLoading) return;
+    const list = draggedList?.length ? draggedList : [graphNode];
+    const nodeList = getNodes.value;
+    const updates = new Map();
+
+    for (const gn of list) {
+        const n = nodeList.find(x => x.id === gn.id);
+        if (!n) continue;
+        if (isInnerFixedStartEnd(n)) continue;
+        if (isRootStartOrEnd(n)) continue;
+
+        const oldParent = n.parentNode || '';
+        const abs = getAbsolutePosition(n.id, nodeList);
+        const {w, h} = getNodePixelSize(n);
+        const cx = abs.x + w / 2;
+        const cy = abs.y + h / 2;
+
+        const targetParent = findDeepestContainingNestable(cx, cy, n.id, nodeList) || '';
+        if (targetParent === oldParent) continue;
+
+        disconnectEdgesForNode(n.id);
+
+        let newPos;
+        if (!targetParent) {
+            newPos = {x: abs.x, y: abs.y};
+        } else {
+            const pAbs = getAbsolutePosition(targetParent, nodeList);
+            newPos = {x: abs.x - pAbs.x, y: abs.y - pAbs.y};
+        }
+
+        updates.set(n.id, {
+            parentNode: targetParent || undefined,
+            position: newPos,
+        });
+    }
+
+    if (updates.size === 0) return;
+
+    setNodes(nds => nds.map(node => {
+        const u = updates.get(node.id);
+        return u ? {...node, ...u} : node;
+    }));
+    nextTick(() => syncConditionNextNodesFromEdges());
 }
 
 /**
@@ -842,8 +1279,8 @@ function applyLayout(direction) {
     layoutDirection.value = direction;
     const currentNodes = getNodes.value;
     const currentEdges = getEdges.value;
-    const laid = autoLayoutVueFlow(currentNodes, currentEdges, direction);
-    setNodes(laid);
+    const laid = autoLayoutVueFlowNested(currentNodes, currentEdges, direction);
+    setNodes(sortVueFlowNodesParentFirst(laid));
     nextTick(() => fitView({padding: 0.2}));
 }
 
@@ -855,9 +1292,38 @@ function onKeyDown(e) {
     if (tag === 'input' || tag === 'textarea') return;
 
     if (e.key === 'Delete' || e.key === 'Backspace') {
-        const selNodes = getSelectedNodes.value;
+        let selNodes = getSelectedNodes.value || [];
+        const protectedInner = selNodes.filter(n => {
+            const t = n.data?.wnode?.type;
+            const p = n.parentNode;
+            return !!(p && (t === NODE_TYPE_CODE.START || t === NODE_TYPE_CODE.END));
+        });
+        if (protectedInner.length) {
+            message.warning('循环内置起止节点不可删除');
+        }
+        selNodes = selNodes.filter(n => !protectedInner.some(p => p.id === n.id));
+
+        const extras = [];
+        for (const n of selNodes) {
+            if (n.data?.wnode?.type === NODE_TYPE_CODE.LOOP) {
+                getNodes.value
+                    .filter(x => x.parentNode === n.id)
+                    .forEach(c => extras.push(c));
+            }
+        }
+
+        const seen = new Set();
+        const toRemove = [];
+        for (const n of [...selNodes, ...extras]) {
+            if (seen.has(n.id)) continue;
+            seen.add(n.id);
+            toRemove.push(n);
+        }
+        if (toRemove.length > 0) {
+            removeNodes(toRemove);
+        }
+
         const selEdges = getSelectedEdges.value;
-        if (selNodes.length > 0) removeNodes(selNodes);
         if (selEdges.length > 0) removeEdges(selEdges);
     }
 }
@@ -1022,93 +1488,104 @@ watch(() => props.uuid, (newUuid) => {
       </div>
     </div>
 
-    <!-- Vue-Flow 画布 -->
-    <div class="flow-canvas">
-      <VueFlow
-        v-model:nodes="nodes"
-        v-model:edges="edges"
-        :node-types="nodeTypes"
-        :delete-key-code="null"
-        :connect-on-click="false"
-        fit-view-on-init
-        @node-click="onNodeClick"
-        @nodes-change="onNodesChange"
-        @edges-change="onEdgesChange"
+    <!-- 主工作区：画布与右侧栏同级，不遮挡顶部工具栏 -->
+    <div class="workspace">
+      <div class="flow-canvas">
+        <VueFlow
+          v-model:nodes="nodes"
+          v-model:edges="edges"
+          :node-types="nodeTypes"
+          :delete-key-code="null"
+          :connect-on-click="false"
+          :elevate-edges-on-select="true"
+          :default-edge-options="defaultEdgeOpts"
+          fit-view-on-init
+          @node-click="onNodeClick"
+          @node-drag-stop="onNodeDragStop"
+          @nodes-change="onNodesChange"
+          @edges-change="onEdgesChange"
+        >
+          <Controls />
+          <MiniMap />
+        </VueFlow>
+      </div>
+
+      <aside
+        v-if="showSideRail"
+        class="side-rail"
+        :style="{ width: configPanelWidth + 'px' }"
       >
-        <Controls />
-        <MiniMap />
-      </VueFlow>
-    </div>
-
-    <!-- 节点配置侧边栏（可拖拽调整宽度） -->
-    <div
-      v-if="configDrawerVisible"
-      class="config-panel"
-      :style="{ width: configPanelWidth + 'px' }"
-    >
-      <!-- 拖拽调整宽度的分隔条 -->
-      <div
-        class="resize-handle"
-        @mousedown="onResizeHandleMouseDown"
-      />
-
-      <!-- 侧边栏头部 -->
-      <div class="config-panel-header">
-        <span class="config-panel-title">节点配置</span>
-        <Button
-          type="text"
-          size="small"
-          @click="configDrawerVisible = false"
-        >
-          ✕
-        </Button>
-      </div>
-
-      <!-- 侧边栏内容 -->
-      <div class="config-panel-body">
-        <NodeConfigPanel
-          v-if="selectedNodeId && selectedNodeData"
-          :key="selectedNodeId"
-          :node-code="selectedNodeData.type"
-          :node-name="selectedNodeData.name || ''"
-          :node-id="selectedNodeId"
-          :initial-configs="selectedNodeData.configs"
-          :pool="selectedNodePool"
-          :request-pool-refresh="refreshSelectedNodePool"
-          @configs-change="onConfigsChange"
-        />
-      </div>
-    </div>
-
-    <!-- 运行日志（SSE） -->
-    <Drawer
-      v-model:open="runDrawerOpen"
-      title="运行日志"
-      placement="right"
-      :width="440"
-      :z-index="200"
-      :mask="false"
-    >
-      <div ref="runLogBodyRef" class="run-log-body">
         <div
-          v-for="(entry, idx) in runLogEntries"
-          :key="idx"
-          class="run-log-entry"
+          class="resize-handle"
+          @mousedown="onResizeHandleMouseDown"
+        />
+
+        <div
+          v-if="configDrawerVisible"
+          class="side-section side-section--config"
         >
-          <div class="run-log-msg">{{ entry.msg }}</div>
-          <div v-if="entry.nodeId" class="run-log-meta">节点: {{ entry.nodeId }}</div>
-          <div
-            v-if="entry.state !== undefined && entry.state !== null"
-            class="run-log-meta"
-          >
-            state: {{ entry.state }}
+          <div class="config-panel-header">
+            <span class="config-panel-title">节点配置</span>
+            <Button
+              type="text"
+              size="small"
+              @click="configDrawerVisible = false"
+            >
+              ✕
+            </Button>
+          </div>
+          <div class="config-panel-body">
+            <NodeConfigPanel
+              v-if="selectedNodeId && selectedNodeData"
+              :key="selectedNodeId"
+              :node-code="selectedNodeData.type"
+              :node-name="selectedNodeData.name || ''"
+              :node-id="selectedNodeId"
+              :initial-configs="selectedNodeData.configs"
+              :pool="selectedNodePool"
+              :request-pool-refresh="refreshSelectedNodePool"
+              @configs-change="onConfigsChange"
+            />
           </div>
         </div>
-        <div v-if="runLogEntries.length === 0" class="run-log-empty">
-          暂无输出，等待 SSE 事件…
+
+        <div
+          v-if="runDrawerOpen"
+          class="side-section side-section--run"
+          :class="{ 'side-section--run-bordered': configDrawerVisible }"
+        >
+          <div class="run-log-header">
+            <span class="run-log-title">运行日志</span>
+            <Button
+              type="text"
+              size="small"
+              @click="runDrawerOpen = false"
+            >
+              ✕
+            </Button>
+          </div>
+          <div ref="runLogBodyRef" class="run-log-body">
+            <div
+              v-for="(entry, idx) in runLogEntries"
+              :key="idx"
+              class="run-log-entry"
+            >
+              <div class="run-log-msg">{{ entry.msg }}</div>
+              <div v-if="entry.nodeId" class="run-log-meta">节点: {{ entry.nodeId }}</div>
+              <div
+                v-if="entry.state !== undefined && entry.state !== null"
+                class="run-log-meta"
+              >
+                state: {{ entry.state }}
+              </div>
+            </div>
+            <div v-if="runLogEntries.length === 0" class="run-log-empty">
+              暂无输出，等待 SSE 事件…
+            </div>
+          </div>
         </div>
-      </div>
-    </Drawer>
+      </aside>
+    </div>
   </div>
 </template>
 
@@ -1151,8 +1628,19 @@ watch(() => props.uuid, (newUuid) => {
   gap: 8px;
 }
 
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .flow-canvas {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1162,20 +1650,58 @@ watch(() => props.uuid, (newUuid) => {
   height: 100%;
 }
 
-/* ── 可拖拽配置侧边栏 ── */
-.config-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  background: #fff;
-  border-left: 1px solid #f0f0f0;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+/* 边线在节点层之上，便于子图内选中边 */
+.flow-canvas :deep(.vue-flow__edges) {
+  z-index: 2;
+}
+
+.flow-canvas :deep(.vue-flow__nodes) {
+  z-index: 1;
+}
+
+.flow-canvas :deep(.vue-flow__resize-control) {
+  z-index: 3;
+}
+
+/* ── 与画布同级的右侧栏 ── */
+.side-rail {
+  position: relative;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  min-width: 300px;
+  min-height: 0;
+  background: #fff;
+  border-left: 1px solid #f0f0f0;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.06);
+  min-width: 280px;
   max-width: 800px;
+}
+
+.side-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.side-section--run-bordered {
+  border-top: 1px solid #f0f0f0;
+}
+
+.run-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.run-log-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
 }
 
 /* 左边缘拖拽条 */
@@ -1220,9 +1746,11 @@ watch(() => props.uuid, (newUuid) => {
 }
 
 .run-log-body {
-  max-height: calc(100vh - 120px);
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   font-size: 13px;
+  padding: 0 16px 12px;
 }
 
 .run-log-entry {

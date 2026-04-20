@@ -143,7 +143,7 @@ function isConfigVisible(config) {
 }
 
 function needsPool(type) {
-  return type === 'String' || type === 'Condition' || type === 'Map' || type === 'List';
+  return type === 'String' || type === 'Number' || type === 'Condition' || type === 'Map' || type === 'List';
 }
 
 function poolPropsFor(type) {

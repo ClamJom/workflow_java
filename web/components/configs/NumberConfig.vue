@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Form, InputNumber, Row, Col, Tooltip } from 'ant-design-vue';
+import { ref, computed, watch, nextTick } from 'vue';
+import { Form, Textarea, AutoComplete, Tooltip } from 'ant-design-vue';
 
 const props = defineProps({
   config: {
@@ -10,79 +10,116 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  pool: {
+    type: Array,
+    default: () => []
+  },
+  requestPoolRefresh: {
+    type: Function,
+    default: null
   }
 });
 
 const emit = defineEmits(['update:modelValue']);
 
-// 内部维护的显示值
-const displayValue = ref(0);
+const inputValue = ref('');
+const textareaRef = ref(null);
 
-// 计算实际值（考虑 k 和 quantize）
-const actualValue = computed(() => {
-  const k = props.config.k || 1;
-  const quantize = props.config.quantize || 0;
-  
-  if (k === 1) {
-    return parseInt(displayValue.value) || 0;
-  }
-  const v = parseFloat(displayValue.value) / k;
-  return quantize > 0 ? parseFloat(v.toFixed(quantize)) : parseInt(v);
+const cacheBefore = ref('');
+const cacheAfter = ref('');
+
+const filteredOptions = computed(() => {
+  if (!props.pool || props.pool.length === 0) return [];
+  return props.pool.map(item => ({
+    value: `{{${item.name}}}`,
+    name: item.name,
+    desc: item.des || item.type || ''
+  }));
 });
 
-// 初始化 displayValue
-function initDisplayValue() {
-  try {
-    const v = parseFloat(props.modelValue) || 0;
-    const k = props.config.k || 1;
-    // 如果 k > 1，需要将存储的值转换为显示值
-    displayValue.value = k > 1 ? v * k : v;
-  } catch {
-    displayValue.value = 0;
+const visible = ref(false);
+
+/** 与 StringConfig 一致：从 a-textarea 取原生 textarea，避免 a-input 的 ref 仅暴露 API 而无 $el 导致取不到 DOM */
+function getTextareaEl() {
+  const root = textareaRef.value;
+  if (!root) return null;
+  return root.resizableTextArea?.textArea || root.$el?.querySelector?.('textarea') || null;
+}
+
+watch(() => props.modelValue, (v) => {
+  const s = v ?? '';
+  if (s !== inputValue.value) {
+    inputValue.value = s;
+  }
+}, { immediate: true });
+
+watch(inputValue, (val) => {
+  emit('update:modelValue', val);
+});
+
+async function onTextareaKeydown(e) {
+  if (e.key !== '/') return;
+  if (props.requestPoolRefresh) {
+    try {
+      await props.requestPoolRefresh();
+    } catch {
+      /* ignore */
+    }
+  }
+  await nextTick();
+  if (filteredOptions.value.length === 0) return;
+  nextTick(() => {
+    const ta = getTextareaEl();
+    if (!ta) return;
+    const val = ta.value;
+    const pos = ta.selectionStart;
+    if (pos >= 1 && val.charAt(pos - 1) === '/') {
+      cacheBefore.value = val.slice(0, pos - 1);
+      cacheAfter.value = val.slice(pos);
+      visible.value = true;
+    }
+  });
+}
+
+function onDropdownVisibleChange(open) {
+  if (!open) {
+    visible.value = false;
   }
 }
 
-// 组件挂载时初始化
-onMounted(() => {
-  initDisplayValue();
-});
-
-// 值变化时同步到 modelValue（后端以字符串存储）
-function onChange() {
-  emit('update:modelValue', String(actualValue.value));
+function onSelect(value) {
+  inputValue.value = cacheBefore.value + value + cacheAfter.value;
+  cacheBefore.value = '';
+  cacheAfter.value = '';
+  visible.value = false;
 }
 </script>
 
 <template>
   <div class="number-config">
     <Form layout="vertical">
-      <Row :gutter="8">
-        <Col :span="24">
-          <Form.Item :label="config.des || config.name">
-            <Tooltip :title="`最小值: ${config.min || '无限制'}, 最大值: ${config.max || '无限制'}`">
-              <InputNumber
-                v-model:value="displayValue"
-                :min="config.min"
-                :max="config.max"
-                :step="config.k && config.k > 1 ? 1 : 1"
-                style="width: 100%"
-                @change="onChange"
-              />
-            </Tooltip>
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row :gutter="8" v-if="config.k && config.k > 1">
-        <Col :span="8">
-          <span class="info-text">除数 (k): {{ config.k }}</span>
-        </Col>
-        <Col :span="8">
-          <span class="info-text">精度: {{ config.quantize || 0 }} 位小数</span>
-        </Col>
-        <Col :span="8">
-          <span class="info-text">实际值: {{ actualValue }}</span>
-        </Col>
-      </Row>
+      <Form.Item :label="config.des || config.name">
+        <Tooltip :title="`数字或变量；最小: ${config.min ?? '无'}, 最大: ${config.max ?? '无'}。输入 / 可从变量池选择`">
+          <AutoComplete
+            v-model:value="inputValue"
+            :options="filteredOptions"
+            :open="visible"
+            :filter-option="false"
+            placeholder="数字或输入 / 插入变量"
+            style="width: 100%"
+            @select="onSelect"
+            @dropdown-visible-change="onDropdownVisibleChange"
+          >
+            <Textarea
+              ref="textareaRef"
+              :rows="1"
+              class="number-config-textarea"
+              @keydown="onTextareaKeydown"
+            />
+          </AutoComplete>
+        </Tooltip>
+      </Form.Item>
     </Form>
   </div>
 </template>
@@ -90,12 +127,13 @@ function onChange() {
 <style scoped>
 .number-config {
   width: 100%;
-  overflow: hidden;
 }
 
-.info-text {
-  font-size: 12px;
-  color: #999;
+/* 单行外观，与原先 Input 接近 */
+.number-config-textarea {
+  resize: none;
+  min-height: 32px;
+  line-height: 1.5715;
 }
 
 :deep(.ant-form-item) {

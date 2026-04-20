@@ -70,12 +70,13 @@ public class NodeImpl implements Node {
     }
 
     private void parseNumber(Config config){
+        String raw = globalPool.parseConfig(config.getValue() != null ? config.getValue() : "", token).trim();
         int k = config.getK() <= 0 ? 1 : config.getK();
         if(k == 1) {
-            configs.put(config.getName(), Integer.parseInt(config.getValue()));
+            configs.put(config.getName(), (int) Math.round(Double.parseDouble(raw)));
             return;
         }
-        int val = Integer.parseInt(config.getValue());
+        int val = (int) Math.round(Double.parseDouble(raw));
         int quantize = config.getQuantize();
         float rVal = (float) val / (float) k;
         BigDecimal decimal = new BigDecimal(rVal);

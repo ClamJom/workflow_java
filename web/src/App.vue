@@ -18,6 +18,8 @@ import {
 import {onMounted, ref} from "vue";
 import api from "../api";
 import WorkflowPreview from "../components/WorkflowPreview.vue";
+import {generateUUID} from "../utils/token.js";
+import {NODE_TYPE_CODE} from "../components/nodes/index.js";
 
 const workflowApis = api.workflow;
 
@@ -67,7 +69,28 @@ function handleWorkflowClicked(uuid) {
 async function handleNewWorkflow() {
     creating.value = true;
     try {
-        const workflow = {name: '新建工作流', nodes: [], edges: []};
+        const startId = generateUUID();
+        const endId = generateUUID();
+        const workflow = {
+            name: '新建工作流',
+            nodes: [
+                {
+                    id: startId,
+                    name: '开始',
+                    type: NODE_TYPE_CODE.START,
+                    configs: [],
+                    position: {x: 80, y: 200},
+                },
+                {
+                    id: endId,
+                    name: '结束',
+                    type: NODE_TYPE_CODE.END,
+                    configs: [],
+                    position: {x: 400, y: 200},
+                },
+            ],
+            edges: [{from: startId, to: endId}],
+        };
         await workflowApis.saveWorkflow(workflow);
         await getAllWorkflows();
         // 自动选中最新创建的工作流（列表末尾）

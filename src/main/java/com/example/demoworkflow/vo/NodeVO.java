@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class NodeVO {
@@ -21,4 +22,16 @@ public class NodeVO {
     public List<ConfigVO> configs;
 
     public String parent;
+
+    /** 画布节点坐标（与 Vue Flow position 一致），持久化后加载可还原布局 */
+    public Position position;
+
+    /** 前端画布节点样式（如循环容器宽高），可选 */
+    public Map<String, Object> style;
+
+    @Data
+    public static class Position {
+        public Double x;
+        public Double y;
+    }
 }

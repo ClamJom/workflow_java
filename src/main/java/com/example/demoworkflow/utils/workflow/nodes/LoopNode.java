@@ -31,7 +31,7 @@ public class LoopNode extends NodeImpl{
                 .name("loop")
                 .value("1")
                 .max(Integer.MAX_VALUE)
-                .min(100)
+                .min(1)
                 .k(1)
                 .type(ConfigTypes.NUMBER)
                 .required(true)
@@ -77,6 +77,10 @@ public class LoopNode extends NodeImpl{
         }
     }
 
+    private void putLoopIIntoPool(int i){
+        globalPool.put(token, nodeId+":"+"loop_i", i);
+    }
+
     @Override
     public void run(){
         assert subStartNode != null;
@@ -86,6 +90,7 @@ public class LoopNode extends NodeImpl{
         if (timeout == null) timeout = 0;
         if (loop == null || loop < 1) return;
         for (int i = 0; i < loop; i++) {
+            putLoopIIntoPool(i);
             CountDownLatch countDownLatch = new CountDownLatch(1);
             SubNodeHandler handler = new SubNodeHandler(globalPool);
             handler.run(subStartNode, this, countDownLatch);
