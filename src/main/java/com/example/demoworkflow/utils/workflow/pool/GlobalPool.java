@@ -208,6 +208,31 @@ public class GlobalPool {
         return (int) oState;
     }
 
+    private String breakSignalFactory(String loopId){
+        return String.format("%s:break", loopId);
+    }
+
+    private void putBreakSignal(String token, String loopId, boolean t){
+        put(token, breakSignalFactory(loopId), t);
+    }
+
+    public void setBreakSignal(String token, String loopId){
+        putBreakSignal(token, loopId, true);
+    }
+
+    public void resetBreakSignal(String token, String loopId){
+        putBreakSignal(token, loopId, false);
+    }
+
+    public boolean getBreakSignal(String token, String loopId){
+        Boolean s = (Boolean) get(token, breakSignalFactory(loopId));
+        if (s == null) {
+            resetBreakSignal(token, loopId);
+            s = false;
+        }
+        return s;
+    }
+
     /**
      * 向字符串注入变量池中对应变量的值
      * @param dst 目标字符串

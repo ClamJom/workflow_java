@@ -1,5 +1,6 @@
 package com.example.demoworkflow.utils.workflow.dto;
 
+import com.example.demoworkflow.utils.workflow.misc.NumberComparator;
 import lombok.Data;
 
 import java.util.List;
@@ -31,7 +32,74 @@ public class ConditionConfig {
     public String b;
 
     /**
-     * 这个条件满足时指向的下一个分支（或多个分支）
+     * 这个条件满足时指向的下一个分支（或多个分支）。
+     * 该属性是为条件节点准备的。
      */
     public List<String> nextNodes;
+
+    private boolean eq(Object l, Object r){
+        if(l instanceof String || r instanceof String) return l.equals(r);
+        NumberComparator nc = new NumberComparator();
+        try{
+            return nc.eq(l, r);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private boolean ne(Object l, Object r){
+        return !eq(l, r);
+    }
+
+    private boolean lt(Object l, Object r){
+        if(l instanceof String || r instanceof String) return false;
+        NumberComparator nc = new NumberComparator();
+        try{
+            return nc.lt(l, r);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private boolean gt(Object l, Object r){
+        if(l instanceof String || r instanceof String) return false;
+        NumberComparator nc = new NumberComparator();
+        try{
+            return nc.gt(l, r);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private boolean le(Object l, Object r){
+        if(l instanceof String || r instanceof String) return false;
+        NumberComparator nc = new NumberComparator();
+        try{
+            return nc.le(l, r);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private boolean ge(Object l, Object r){
+        if(l instanceof String || r instanceof String) return false;
+        NumberComparator nc = new NumberComparator();
+        try{
+            return nc.ge(l, r);
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    public boolean compareCore(Object l, Object r){
+        return switch (operator) {
+            case "==", "eq" -> eq(l, r);
+            case "!=", "ne" -> ne(l, r);
+            case "<", "lt" -> lt(l, r);
+            case ">", "gt" -> gt(l, r);
+            case "<=", "le" -> le(l, r);
+            case ">=", "ge" -> ge(l, r);
+            default -> false;
+        };
+    }
 }

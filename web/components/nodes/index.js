@@ -33,6 +33,8 @@ export const NODE_TYPE_CODE = {
     HTTP: 0x000005,
     /** 与 NodeType.LOOP 一致：0x000007 | NESTABLE_FLAG */
     LOOP: 0x000007 | NESTABLE_FLAG,
+    WHILE_LOOP: 0x000008 | NESTABLE_FLAG,
+    BREAK: 0x000009,
 };
 
 /**
@@ -58,6 +60,7 @@ export function getVueFlowNodeType(code) {
         case NODE_TYPE_CODE.CONDITION:
             return 'condition';
         case NODE_TYPE_CODE.LOOP:
+        case NODE_TYPE_CODE.WHILE_LOOP:
             return 'loop';
         default:
             return 'work';

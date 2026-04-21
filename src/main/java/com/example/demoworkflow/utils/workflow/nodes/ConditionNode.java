@@ -2,9 +2,7 @@ package com.example.demoworkflow.utils.workflow.nodes;
 
 import com.example.demoworkflow.utils.types.NodeType;
 import com.example.demoworkflow.utils.workflow.dto.ConditionConfig;
-import com.example.demoworkflow.utils.workflow.misc.NumberComparator;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
-import com.example.demoworkflow.vo.ConfigVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,72 +21,6 @@ public class ConditionNode extends NodeImpl{
         setNodeType(NodeType.CONDITION);
     }
 
-    private boolean eq(Object a, Object b){
-        if(a instanceof String || b instanceof String) return a.equals(b);
-        NumberComparator nc = new NumberComparator();
-        try{
-            return nc.eq(a, b);
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    private boolean ne(Object a, Object b){
-        return !eq(a, b);
-    }
-
-    private boolean lt(Object a, Object b){
-        if(a instanceof String || b instanceof String) return false;
-        NumberComparator nc = new NumberComparator();
-        try{
-            return nc.lt(a, b);
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    private boolean gt(Object a, Object b){
-        if(a instanceof String || b instanceof String) return false;
-        NumberComparator nc = new NumberComparator();
-        try{
-            return nc.gt(a, b);
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    private boolean le(Object a, Object b){
-        if(a instanceof String || b instanceof String) return false;
-        NumberComparator nc = new NumberComparator();
-        try{
-            return nc.le(a, b);
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    private boolean ge(Object a, Object b){
-        if(a instanceof String || b instanceof String) return false;
-        NumberComparator nc = new NumberComparator();
-        try{
-            return nc.ge(a, b);
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    private boolean compareCore(String operator, Object a, Object b){
-        return switch (operator) {
-            case "==", "eq" -> eq(a, b);
-            case "!=", "ne" -> ne(a, b);
-            case "<", "lt" -> lt(a, b);
-            case ">", "gt" -> gt(a, b);
-            case "<=", "le" -> le(a, b);
-            case ">=", "ge" -> ge(a, b);
-            default -> false;
-        };
-    }
-
     @Override
     public void run(){
         List<String> conditions = (List<String>) configs.computeIfAbsent("<|CONDITIONS|>", k -> new ArrayList<>());
@@ -96,7 +28,7 @@ public class ConditionNode extends NodeImpl{
             ConditionConfig cc = (ConditionConfig) configs.get(condition);
             Object a = globalPool.parseObject(cc.a, token);
             Object b = globalPool.parseObject(cc.b, token);
-            if(!compareCore(cc.operator, a, b)){
+            if(!cc.compareCore(a, b)){
                 if(cc.nextNodes == null) return;
                 /*
                 绝对不要在其它可能正常执行的分支前方连接条件节点指向的下一个节点，因为当条件节点认为下一个节点不应当执行时会将节点置为失能，

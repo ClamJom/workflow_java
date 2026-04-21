@@ -151,7 +151,10 @@ public class Workflow {
             outDegree.computeIfPresent(edge.from, (k, v) -> v + 1);
         }
         for (NodeImpl node: nodes){
-            if (node.getNodeType() != NodeType.END && outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
+            if ((node.getNodeType().getCode() & (
+                        NodeType.END.getCode() | NodeType.BREAK.getCode()
+                    )) == 0 &&
+                    outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
                 putInvalidMessage(workflow, String.format("不允许没有出边的节点！节点ID:%s", node.nodeId));
                 return workflow;
             }

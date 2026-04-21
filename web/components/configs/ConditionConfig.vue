@@ -297,14 +297,14 @@ function onRightValueUpdate(v) {
       <Row :gutter="8" align="middle">
         <Col :span="8">
           <Form.Item label="左值">
-            <Tooltip title="输入值或通过{{节点ID:变量名}}输入上游节点变量">
+            <Tooltip title="输入值或通过`/`输入上游节点变量，值默认为字符串">
               <AutoComplete
                 :value="row.a"
                 class="left-input"
                 :options="filteredOptions"
                 :open="row.leftVisible"
                 :filter-option="false"
-                placeholder="输入值或通过{{节点ID:变量名}}输入上游节点变量"
+                placeholder="输入值或通过`/`输入上游节点变量，值默认为字符串"
                 style="width: 100%"
                 @select="onLeftSelect"
                 @update:value="onLeftValueUpdate"
@@ -330,14 +330,14 @@ function onRightValueUpdate(v) {
         </Col>
         <Col :span="8">
           <Form.Item label="右值">
-            <Tooltip title="输入值或通过{{节点ID:变量名}}输入上游节点变量">
+            <Tooltip title="输入值或通过`/`输入上游节点变量，值默认为字符串">
               <AutoComplete
                 :value="row.b"
                 class="right-input"
                 :options="filteredOptions"
                 :open="row.rightVisible"
                 :filter-option="false"
-                placeholder="输入值或通过{{节点ID:变量名}}输入上游节点变量"
+                placeholder="输入值或通过`/`输入上游节点变量，值默认为字符串"
                 style="width: 100%"
                 @select="onRightSelect"
                 @update:value="onRightValueUpdate"

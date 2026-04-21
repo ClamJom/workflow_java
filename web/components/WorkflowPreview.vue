@@ -694,7 +694,7 @@ function collectLoopAncestorIds(nodeId, currentNodes) {
     while (cur?.parentNode) {
         const pid = cur.parentNode;
         const parent = findNodeById(currentNodes, pid);
-        if (parent?.data?.wnode?.type === NODE_TYPE_CODE.LOOP) {
+        if (parent?.data?.wnode?.type === NODE_TYPE_CODE.LOOP || parent?.data?.wnode?.type === NODE_TYPE_CODE.WHILE_LOOP) {
             ids.push(String(pid));
         }
         cur = parent;
@@ -862,7 +862,7 @@ function addNode(nodeType) {
         nestParentId = null;
     }
 
-    if (code === NODE_TYPE_CODE.LOOP) {
+    if (isNestableNodeType(code)) {
         const loopId = generateUUID();
         const subStartId = generateUUID();
         const subEndId = generateUUID();

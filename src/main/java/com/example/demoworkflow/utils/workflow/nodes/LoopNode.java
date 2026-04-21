@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class LoopNode extends NodeImpl{
@@ -63,7 +64,7 @@ public class LoopNode extends NodeImpl{
      * 清理子节点的状态记录。由于节点运行时需要通过上一节点的状态是否为空来判断上一节点是否已经运行，
      * 因此如果不清理节点状态将会导致节点进入无限等待。
      */
-    private void clearNodeStates(){
+    protected void clearNodeStates(){
         Set<String> nodeIds = new HashSet<>();
         Queue<NodeImpl> stack = new LinkedList<>();
         stack.add(subStartNode);
@@ -79,8 +80,36 @@ public class LoopNode extends NodeImpl{
         }
     }
 
-    private void putLoopIIntoPool(int i){
+    protected void putLoopIIntoPool(int i){
         globalPool.put(token, nodeId+":"+"loop_i", i);
+    }
+
+    protected boolean runCore(Integer timeout, int i){
+        putLoopIIntoPool(i);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        SubNodeHandler handler = new SubNodeHandler(globalPool);
+        handler.run(subStartNode, this, countDownLatch);
+        AtomicBoolean waitTrue = new AtomicBoolean(true);
+        try {
+            if (timeout != 0)
+                waitTrue.set(countDownLatch.await(timeout, TimeUnit.MILLISECONDS));
+
+            else
+                countDownLatch.await();
+        }catch (InterruptedException e){
+            throw new RuntimeException(e);
+        }
+        if (!waitTrue.get()){
+            onNodeError("等待循环执行完成超时");
+            return true;
+        }
+        if (globalPool.getBreakSignal(token, nodeId)) return true;
+        // 序列化与反序列化深拷贝
+        Object output = subEndNode.nodePool.get("output");
+        String strCopy = JSON.toJSONString(output);
+        outputs.add(JSON.parse(strCopy));
+        clearNodeStates();
+        return false;
     }
 
     @Override
@@ -92,28 +121,7 @@ public class LoopNode extends NodeImpl{
         if (timeout == null) timeout = 0;
         if (loop == null || loop < 1) return;
         for (int i = 0; i < loop; i++) {
-            putLoopIIntoPool(i);
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            SubNodeHandler handler = new SubNodeHandler(globalPool);
-            handler.run(subStartNode, this, countDownLatch);
-            boolean waitTrue = true;
-            try {
-                if (timeout != 0)
-                    waitTrue = countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
-                else
-                    countDownLatch.await();
-            }catch (InterruptedException e){
-                throw new RuntimeException(e);
-            }
-            if (!waitTrue){
-                onNodeError("等待循环执行完成超时");
-                break;
-            }
-            // 序列化与反序列化深拷贝
-            Object output = subEndNode.nodePool.get("output");
-            String strCopy = JSON.toJSONString(output);
-            outputs.add(JSON.parse(strCopy));
-            clearNodeStates();
+            if(runCore(timeout, i)) break;
         }
         nodePool.put("output", outputs);
     }

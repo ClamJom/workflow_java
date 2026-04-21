@@ -1,5 +1,6 @@
 package com.example.demoworkflow.utils.workflow.handler;
 
+import com.example.demoworkflow.utils.types.NodeType;
 import com.example.demoworkflow.utils.workflow.nodes.NodeImpl;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 import com.example.demoworkflow.utils.workflow.result.WorkflowResult;
@@ -38,7 +39,7 @@ public class SubNodeHandler {
      * 处理运行节点核心运行逻辑前的逻辑，更新节点状态
      * @param node 节点
      */
-    private void nodeBefore(NodeImpl node){
+    private void nodeBefore(NodeImpl node, NodeImpl parentNode){
         if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR) return;
         if(globalPool.getNodeState(node.getToken(), node.nodeId) == NodeStates.DISABLED) return;
         if(!node.relatedNodes.isEmpty() && node.relatedNodes.stream().allMatch(pNode ->
@@ -63,6 +64,7 @@ public class SubNodeHandler {
                 }
             })) break;
         }
+        if (globalPool.getBreakSignal(node.token, parentNode.nodeId)) return;
         node.parseConfig(node.configList);
         node.before();
     }
@@ -71,8 +73,9 @@ public class SubNodeHandler {
      * 处理节点核心运行逻辑
      * @param node 节点
      */
-    private void nodeRun(NodeImpl node){
-        if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR) return;
+    private void nodeRun(NodeImpl node, NodeImpl parentNode){
+        if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR ||
+                globalPool.getBreakSignal(node.getToken(), parentNode.nodeId)) return;
         if(globalPool.getNodeState(node.token, node.nodeId) == NodeStates.DISABLED) return;
         globalPool.nodeRunning(node.token, node.nodeId);
         putNodeState(node, NodeStates.RUNNING, "运行节点: "+node.nodeId);
@@ -83,7 +86,8 @@ public class SubNodeHandler {
         Lock lock = globalPool.redissonClient.getLock(node.nodeId);
         try{
             lock.lock();
-            if(globalPool.getNodeState(node.token, node.nodeId) != NodeStates.NULL) return;
+            int nextNodeState = globalPool.getNodeState(node.token, node.nodeId);
+            if(nextNodeState != NodeStates.NULL && nextNodeState != NodeStates.DISABLED) return;
             Thread.ofVirtual().start(()->run(node, parentNode, latch));
         }finally {
             lock.unlock();
@@ -93,6 +97,10 @@ public class SubNodeHandler {
     private void nodeAfter(NodeImpl node, NodeImpl parentNode, CountDownLatch latch){
         if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR ||
                 globalPool.getWorkflowState(node.getToken()) == WorkflowStates.NULL){
+            latch.countDown();
+            return;
+        }
+        if(globalPool.getBreakSignal(node.token, parentNode.nodeId)){
             latch.countDown();
             return;
         }
@@ -138,8 +146,8 @@ public class SubNodeHandler {
     @Async("workflow")
     public void run(NodeImpl node, NodeImpl parentNode, CountDownLatch latch){
         try{
-            nodeBefore(node);
-            nodeRun(node);
+            nodeBefore(node, parentNode);
+            nodeRun(node, parentNode);
             nodeAfter(node, parentNode, latch);
         }catch(Exception e){
             nodeError(node, e);

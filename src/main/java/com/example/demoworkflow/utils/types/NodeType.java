@@ -21,6 +21,8 @@ public enum NodeType {
     HTTP("网络请求", 0x000005),
     SLEEP("休眠", 0x000006),
     LOOP("循环", 0x000007 | NodeType.NESTABLE_FLAG),
+    WHILE("条件循环", 0x000008 | NodeType.NESTABLE_FLAG),
+    BREAK("循环跳出", 0x000009),
     ;
 
     private final String name;
@@ -40,6 +42,8 @@ public enum NodeType {
         nodeClazzMap.put(HTTP.getCode(), HTTPRequestNode.class);
         nodeClazzMap.put(SLEEP.getCode(), SleepNode.class);
         nodeClazzMap.put(LOOP.getCode(), LoopNode.class);
+        nodeClazzMap.put(WHILE.getCode(), WhileLoopNode.class);
+        nodeClazzMap.put(BREAK.getCode(), BreakNode.class);
     }
 
     NodeType(String name, int code){

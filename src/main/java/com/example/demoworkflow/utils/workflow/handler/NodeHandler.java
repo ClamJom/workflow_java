@@ -93,7 +93,10 @@ public class NodeHandler {
         Lock lock = redissonClient.getLock(node.nodeId);
         try{
             lock.lock();
-            if(globalPool.getNodeState(node.token, node.nodeId) != NodeStates.NULL) return;
+            int nextNodeState = globalPool.getNodeState(node.token, node.nodeId);
+            // 即便Disabled，也要运行节点。NodeHandler会自动跳过这些节点的核心功能。
+            // 如果不这么做，那么远端的节点状态永远为NULL，会使得依赖这些节点的节点陷入永恒等待。
+            if(nextNodeState != NodeStates.NULL && nextNodeState != NodeStates.DISABLED) return;
             Thread.ofVirtual().start(()->run(node));
         }finally {
             lock.unlock();
