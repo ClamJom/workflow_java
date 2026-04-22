@@ -1,5 +1,6 @@
 package com.example.demoworkflow.utils.workflow.handler;
 
+import com.example.demoworkflow.utils.types.NodeType;
 import com.example.demoworkflow.utils.workflow.nodes.NodeImpl;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 import com.example.demoworkflow.utils.workflow.result.WorkflowResult;
@@ -47,8 +48,9 @@ public class NodeHandler {
     private void nodeBefore(NodeImpl node){
         if(globalPool.getWorkflowState(node.getToken()) == WorkflowStates.ERROR) return;
         if(globalPool.getNodeState(node.getToken(), node.nodeId) == NodeStates.DISABLED) return;
-        if(!node.relatedNodes.isEmpty() && node.relatedNodes.stream().allMatch(pNode ->
-                globalPool.getNodeState(node.token, pNode) == NodeStates.DISABLED)){
+        if(node.getNodeType() != NodeType.END && !node.relatedNodes.isEmpty() &&
+                node.relatedNodes.stream().allMatch(pNode ->
+                        globalPool.getNodeState(node.token, pNode) == NodeStates.DISABLED)){
             globalPool.nodeDisabled(node.token, node.nodeId);
             return;
         }

@@ -3,6 +3,8 @@ package com.example.demoworkflow.utils.workflow.nodes;
 import com.example.demoworkflow.utils.types.NodeType;
 import com.example.demoworkflow.utils.workflow.dto.ConditionConfig;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
+import com.example.demoworkflow.utils.workflow.states.NodeStates;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.List;
 /**
  * 条件节点
  */
+@Slf4j
 public class ConditionNode extends NodeImpl{
     public ConditionNode(GlobalPool globalPool) {
         super(globalPool);
@@ -22,20 +25,20 @@ public class ConditionNode extends NodeImpl{
     }
 
     @Override
-    public void run(){
+    public void run() {
         List<String> conditions = (List<String>) configs.computeIfAbsent("<|CONDITIONS|>", k -> new ArrayList<>());
         conditions.forEach(condition->{
             ConditionConfig cc = (ConditionConfig) configs.get(condition);
             Object a = globalPool.parseObject(cc.a, token);
             Object b = globalPool.parseObject(cc.b, token);
             if(!cc.compareCore(a, b)){
-                if(cc.nextNodes == null) return;
-                /*
-                绝对不要在其它可能正常执行的分支前方连接条件节点指向的下一个节点，因为当条件节点认为下一个节点不应当执行时会将节点置为失能，
-                这将导致节点不再执行其功能。由于执行是并发的，也有可能节点被置于失能态之前就已经被执行。如果需要相同的功能，需要另外生成新的
-                节点。
-                */
+                if (cc.nextNodes == null) return;
+                // 将该条条件指向的节点置于失能态，后续完全依赖该节点的分支上所有的节点也将处于失能态
+                // QA：为什么不跳过条件节点的非直接下游（不止与当前条件节点连接的节点）？这是因为每一个分支都是一个异步的线程。如果这么做会
+                // 导致线程不安全
                 nextNodes.forEach(node->{
+                    // 跳过结束节点，该节点不应该被置于失能态
+                    if (node.getNodeType() == NodeType.END) return;
                     if(cc.nextNodes.contains(node.nodeId)){
                         globalPool.nodeDisabled(token, node.nodeId);
                     }

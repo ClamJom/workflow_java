@@ -7,8 +7,8 @@ import com.example.demoworkflow.utils.workflow.states.NodeStates;
 import io.micrometer.common.util.StringUtils;
 
 /**
- * 循环中断节点，必须指定父节点，且父节点必须是循环节点。
- * Break本身什么都不做，他只提供一个信号向NodeHandler通知本次运行应当提前结束。
+ * 循环中断节点：必须挂在循环/条件循环容器下；图结构上需保留入边与出边（出边仅指向同容器内结束节点），
+ * 以便与多线程下沿 next 链推进的执行模型一致。运行时仍只负责向 GlobalPool 写入跳出信号。
  */
 public class BreakNode extends NodeImpl{
     public BreakNode(GlobalPool globalPool) {

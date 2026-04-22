@@ -113,6 +113,12 @@ public class LoopNode extends NodeImpl{
     }
 
     @Override
+    public void before(){
+        globalPool.deleteBreakSignal(token, nodeId);
+        clearNodeStates();
+    }
+
+    @Override
     public void run(){
         assert subStartNode != null;
         assert subEndNode != null;

@@ -113,6 +113,10 @@ public class NodeImpl implements Node {
      */
     public void parseConfig(List<Config> configList){
         // TODO: 容器配置类型的子类型配置解析
+        // 在解析节点配置前一定要清空节点的全部配置，否则在循环节点中的节点将出现许多无意义的配置
+        if (!configs.isEmpty()) configs.clear();
+        List<String> conditions = (List<String>) configs.computeIfAbsent("<|CONDITIONS|>", k->new ArrayList<>());
+        if (!conditions.isEmpty()) conditions.clear();
         if(configList == null) return;
         configList.forEach(config->{
             switch(config.getType()){

@@ -151,10 +151,29 @@ public class Workflow {
             outDegree.computeIfPresent(edge.from, (k, v) -> v + 1);
         }
         for (NodeImpl node: nodes){
-            if ((node.getNodeType().getCode() & (
-                        NodeType.END.getCode() | NodeType.BREAK.getCode()
-                    )) == 0 &&
-                    outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
+            if (node.getNodeType() == NodeType.BREAK) {
+                if (StringUtil.isEmpty(node.parentNodeId)) {
+                    putInvalidMessage(workflow, String.format("Break节点必须置于循环容器内！节点ID:%s", node.nodeId));
+                    return workflow;
+                }
+                NodeImpl breakParent = nodeMap.get(node.parentNodeId);
+                if (breakParent == null
+                        || (breakParent.getNodeType() != NodeType.LOOP && breakParent.getNodeType() != NodeType.WHILE)) {
+                    putInvalidMessage(workflow, String.format("Break节点只能置于循环或条件循环容器内！节点ID:%s", node.nodeId));
+                    return workflow;
+                }
+                for (NodeImpl next : node.nextNodes) {
+                    if (next.getNodeType() != NodeType.END) {
+                        putInvalidMessage(workflow, String.format("Break节点的出边只能指向结束节点！节点ID:%s", node.nodeId));
+                        return workflow;
+                    }
+                    if (!Objects.equals(next.parentNodeId, node.parentNodeId)) {
+                        putInvalidMessage(workflow, String.format("Break节点的出边只能指向同容器内的结束节点！节点ID:%s", node.nodeId));
+                        return workflow;
+                    }
+                }
+            }
+            if (node.getNodeType() != NodeType.END && outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
                 putInvalidMessage(workflow, String.format("不允许没有出边的节点！节点ID:%s", node.nodeId));
                 return workflow;
             }
