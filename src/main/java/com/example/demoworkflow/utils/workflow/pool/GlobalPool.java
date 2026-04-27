@@ -237,10 +237,6 @@ public class GlobalPool {
         return s;
     }
 
-    public void deleteBreakSignal(String token, String loopId){
-        delete(token, breakSignalFactory(loopId));
-    }
-
     /**
      * 向字符串注入变量池中对应变量的值
      * @param dst 目标字符串
