@@ -7,20 +7,13 @@ import com.example.demoworkflow.utils.workflow.dto.OutputVariableDes;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 import com.example.demoworkflow.utils.workflow.result.WorkflowResult;
 import com.example.demoworkflow.vo.ConfigVO;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import reactor.util.retry.Retry;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +25,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class HTTPRequestNode extends NodeImpl{
 
-    private WebClient.RequestBodySpec spec;
+    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)";
+
+    private OkHttpClient httpClient;
+    private Request request;
+    private boolean retryEnabled;
+    private int maxRetriedTimes;
 
     public HTTPRequestNode(GlobalPool globalPool) {
         super(globalPool);
@@ -86,8 +85,10 @@ public class HTTPRequestNode extends NodeImpl{
         defaultConfigs.add(ConfigVO.builder()
                 .name("Timeout")
                 .type(ConfigTypes.NUMBER)
-                .des("超时时间（秒）")
+                .des("超时时间（毫秒）")
                 .value("5000")
+                .min(1000)
+                .max(30000)
                 .required(false)
                 .build());
         defaultConfigs.add(ConfigVO.builder()
@@ -102,6 +103,8 @@ public class HTTPRequestNode extends NodeImpl{
                 .type(ConfigTypes.NUMBER)
                 .des("最大重试次数")
                 .value("5")
+                .min(0)
+                .max(30)
                 .build());
         return defaultConfigs;
     }
@@ -127,14 +130,16 @@ public class HTTPRequestNode extends NodeImpl{
         Map<String, String> headers = (Map<String, String>) configs.computeIfAbsent("Headers", k -> new HashMap<>());
         Map<String, String> data = (Map<String, String>) configs.computeIfAbsent("Data", k -> new HashMap<>());
         int timeout = (int) configs.get("Timeout");
-        boolean retry = (boolean) configs.get("Retry");
-        int maxRetriedTimes = (int) configs.get("MaxRetriedTimes");
+        retryEnabled = (boolean) configs.get("Retry");
+        maxRetriedTimes = (int) configs.get("MaxRetriedTimes");
         // 处理URL
         if(url == null){
             onNodeError("URL不允许为空");
             return;
         }
-        if(url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if(!url.endsWith("/")) {
+            url = url + "/";
+        }
         // 处理URI
         if(uri != null) {
             if (uri.startsWith("/")) uri = uri.substring(1);
@@ -146,51 +151,74 @@ public class HTTPRequestNode extends NodeImpl{
             return;
         }
         method = method.toUpperCase();
-        // 处理请求数据
-        data.forEach((key, value) -> {
-            data.put(key, globalPool.parseConfig(value, token));
-        });
-        // 配置超时
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout)
-                .responseTimeout(Duration.ofMillis(timeout))
-                .disableRetry(!retry)
-                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(timeout, TimeUnit.MILLISECONDS)));
-        // 配置重试
-        ExchangeFilterFunction retryFilter = (request, next) -> next.exchange(request)
-                .retryWhen(Retry.fixedDelay(maxRetriedTimes, Duration.ofMillis(500)));
-        // 配置请求客户端
-        WebClient webClient = WebClient.builder()
-                .baseUrl(url)
-                .defaultHeader(HttpHeaders.USER_AGENT,"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)")
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .filter(retryFilter)
+        // 处理请求数据（复制后迭代，避免在遍历时修改 Map）
+        for (Map.Entry<String, String> e : new HashMap<>(data).entrySet()) {
+            data.put(e.getKey(), globalPool.parseConfig(e.getValue(), token));
+        }
+
+        this.httpClient = new OkHttpClient.Builder()
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
-        WebClient.RequestBodySpec spec =  webClient.method(HttpMethod.valueOf(method));
-        for(String k : headers.keySet()){
-            spec = spec.header(k, headers.get(k));
+
+        RequestBody body = null;
+        if (hasRequestBody(method) && !data.isEmpty()) {
+            body = RequestBody.create(JSON.toJSONString(data), JSON_MEDIA_TYPE);
         }
-        if(hasRequestBody(method) && !data.isEmpty()){
-            spec.contentType(MediaType.APPLICATION_JSON).bodyValue(data);
+
+        Request.Builder builder = new Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT);
+        for (String k : headers.keySet()) {
+            builder.header(k, headers.get(k));
         }
-        this.spec = spec;
+        builder.method(method, body);
+
+        this.request = builder.build();
     }
 
     @Override
     public void run(){
+        if (httpClient == null || request == null) {
+            return;
+        }
+        int maxTries = retryEnabled ? (1 + maxRetriedTimes) : 1;
+        for (int attempt = 0; attempt < maxTries; attempt++) {
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    if (retryEnabled && attempt < maxTries - 1) {
+                        sleepRetryInterval();
+                        continue;
+                    }
+                    onNodeError("HTTP " + response.code() + " " + response.message());
+                    return;
+                }
+                String result = response.body() != null ? response.body().string() : "";
+                nodePool.put("output", result);
+                putWorkflowResult(WorkflowResult.builder()
+                        .token(token)
+                        .nodeId(nodeId)
+                        .msg("请求结果")
+                        .extData(result)
+                        .build());
+                return;
+            } catch (IOException e) {
+                if (retryEnabled && attempt < maxTries - 1) {
+                    sleepRetryInterval();
+                    continue;
+                }
+                onNodeError(e.getMessage());
+                return;
+            }
+        }
+    }
+
+    private static void sleepRetryInterval() {
         try {
-            Mono<Object> rsp = spec.retrieve().bodyToMono(Object.class);
-            Object result = rsp.block();
-            nodePool.put("output", result);
-            putWorkflowResult(WorkflowResult.builder()
-                    .token(token)
-                    .nodeId(nodeId)
-                    .msg("请求结果")
-                    .extData(result)
-                    .build());
-        }catch (Exception e){
-            onNodeError(e.getMessage());
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
