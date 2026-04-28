@@ -30,6 +30,7 @@ public class SubNodeHandler {
         WorkflowResult result = WorkflowResult.builder()
                 .token(node.token)
                 .state(stateCode)
+                .stateFlag(true)
                 .msg(message)
                 .build();
         node.putWorkflowResult(result);

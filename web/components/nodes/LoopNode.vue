@@ -74,11 +74,22 @@ function onResizeEnd(ev) {
 /* 隐藏 NodeResizer 边线/手柄（仍可拖拽边缘与角点调整大小） */
 .loop-root :deep(.vue-flow__resize-control) {
   opacity: 0;
+  transition: all 0.3s;
 }
 .loop-root :deep(.vue-flow__resize-control *) {
   opacity: 0 !important;
   stroke: transparent !important;
   fill: transparent !important;
+}
+
+.loop-root:hover :deep(.vue-flow__resize-control){
+  opacity: 0.5;
+}
+
+.loop-root:hover :deep(.vue-flow__resize-control *){
+  opacity: 0.5;
+  stroke: unset;
+  fill: #531dab;
 }
 
 .loop-shell {

@@ -30,7 +30,7 @@ public class UnaryOperatorsNode extends NodeImpl{
         List<ConfigVO> configs = new ArrayList<>();
         configs.add(ConfigVO.builder()
                         .name("var")
-                        .des("值或变量；k>1 时表示小数分母与精度（同 parseNumber）")
+                        .des("值或变量")
                         .k(1)
                         .quantize(0)
                         .type("Number")

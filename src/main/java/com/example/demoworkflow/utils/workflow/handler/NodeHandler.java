@@ -36,6 +36,7 @@ public class NodeHandler {
         WorkflowResult result = WorkflowResult.builder()
                 .token(node.token)
                 .state(stateCode)
+                .stateFlag(true)
                 .msg(message)
                 .build();
         node.putWorkflowResult(result);

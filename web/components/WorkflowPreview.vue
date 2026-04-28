@@ -9,13 +9,15 @@ import {
 import {Controls} from '@vue-flow/controls';
 import {MiniMap} from '@vue-flow/minimap';
 import {
-    Button,
-    message,
-    Tooltip,
-    Divider,
-    Dropdown,
-    Menu,
-    Input,
+  Button,
+  message,
+  Tooltip,
+  Divider,
+  Dropdown,
+  Menu,
+  Input,
+  Switch,
+  Form,
 } from 'ant-design-vue';
 import {
     PlusOutlined,
@@ -113,6 +115,8 @@ let isUpdatingConfigs = false;
 const runningWorkflow = ref(false);
 /** 运行日志 Drawer */
 const runDrawerOpen = ref(false);
+/** 是否隐藏仅状态指示日志 */
+const hideStateFlag = ref(true);
 /** @type {import('vue').Ref<Array<{t: number, msg: string, state?: number, nodeId?: string, raw?: string}>>} */
 const runLogEntries = ref([]);
 /** 中止当前 SSE 连接 */
@@ -612,6 +616,7 @@ async function handleRunWorkflow() {
                         t: Date.now(),
                         msg: parsed.msg ?? '',
                         state: parsed.state,
+                        stateFlag: parsed.stateFlag,
                         nodeId: resolveNodeIdFromResult(parsed) || undefined,
                         raw: text,
                     });
@@ -1687,9 +1692,17 @@ watch(() => props.uuid, (newUuid) => {
               ✕
             </Button>
           </div>
+          <div class="run-log-options">
+            <div class="run-log-option-item">
+              <label for="hideState">隐藏状态日志</label>
+              <Tooltip title="隐藏状态日志">
+                <Switch v-model:checked="hideStateFlag" id="hideState"></Switch>
+              </Tooltip>
+            </div>
+          </div>
           <div ref="runLogBodyRef" class="run-log-body">
             <div
-              v-for="(entry, idx) in runLogEntries"
+              v-for="(entry, idx) in runLogEntries.filter(item=> !hideStateFlag || !item.stateFlag)"
               :key="idx"
               class="run-log-entry"
             >
@@ -1874,6 +1887,22 @@ watch(() => props.uuid, (newUuid) => {
   overflow-y: auto;
   font-size: 13px;
   padding: 0 16px 12px;
+}
+
+.run-log-options{
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.run-log-option-item{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.run-log-option-item label{
+  margin-right: 5px;
 }
 
 .run-log-entry {

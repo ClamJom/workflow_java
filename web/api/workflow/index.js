@@ -27,6 +27,7 @@ export function runWorkflow(data, config = {}){
             "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        openWhenHidden: true,
         ...config
     });
 }
