@@ -1433,7 +1433,7 @@ function onKeyDown(e) {
 
         const extras = [];
         for (const n of selNodes) {
-            if (n.data?.wnode?.type === NODE_TYPE_CODE.LOOP) {
+            if (n.data?.wnode?.type | NESTABLE_FLAG !== 0) {
                 getNodes.value
                     .filter(x => x.parentNode === n.id)
                     .forEach(c => extras.push(c));
