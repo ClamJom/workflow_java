@@ -41,21 +41,6 @@
 			"to":"21fcc1eia39st"
 		},
 		{
-			"from":"01zaf93upnbij",
-			"fromHandle":"source",
-			"to":"0rp4bh4z3u4jg"
-		},
-		{
-			"from":"0rp4bh4z3u4jg",
-			"fromHandle":"source",
-			"to":"3clhl5o4tgl2e"
-		},
-		{
-			"from":"21fcc1eia39st",
-			"fromHandle":"source",
-			"to":"furu4kf306rp"
-		},
-		{
 			"from":"3clhl5o4tgl2e",
 			"fromHandle":"source",
 			"to":"furu4kf306rp"
@@ -131,54 +116,9 @@
 			"to":"qaegk0jzncoiu"
 		},
 		{
-			"from":"qaegk0jzncoiu",
-			"fromHandle":"source",
-			"to":"i5tb4z5vw224r"
-		},
-		{
 			"from":"i5tb4z5vw224r",
 			"fromHandle":"source",
 			"to":"h61q7htt4g4x5"
-		},
-		{
-			"from":"gqp341kg4zskc",
-			"fromHandle":"source",
-			"to":"3jz69qucp004"
-		},
-		{
-			"from":"h61q7htt4g4x5",
-			"fromHandle":"source",
-			"to":"3jz69qucp004"
-		},
-		{
-			"from":"3jz69qucp004",
-			"fromHandle":"source",
-			"to":"3rb9uypaxyinp"
-		},
-		{
-			"from":"3rb9uypaxyinp",
-			"fromHandle":"source",
-			"to":"x8c6ht631e9mp"
-		},
-		{
-			"from":"x8c6ht631e9mp",
-			"fromHandle":"source",
-			"to":"qp91ojvlikiio"
-		},
-		{
-			"from":"qp91ojvlikiio",
-			"fromHandle":"source",
-			"to":"1vp36bduxkp3l"
-		},
-		{
-			"from":"1vp36bduxkp3l",
-			"fromHandle":"source",
-			"to":"0qgzr1y1h6par"
-		},
-		{
-			"from":"3635o2t486aew",
-			"fromHandle":"source",
-			"to":"051doy5twkblu"
 		},
 		{
 			"from":"051doy5twkblu",
@@ -189,21 +129,6 @@
 			"from":"h99knwb2t2x4b",
 			"fromHandle":"source",
 			"to":"ddxty4r7wk3n"
-		},
-		{
-			"from":"ddxty4r7wk3n",
-			"fromHandle":"source",
-			"to":"tk3el0571pxrv"
-		},
-		{
-			"from":"tk3el0571pxrv",
-			"fromHandle":"source",
-			"to":"ovzq6f43y67si"
-		},
-		{
-			"from":"ovzq6f43y67si",
-			"fromHandle":"source",
-			"to":"a93zz92jjpinl"
 		},
 		{
 			"from":"hjkhuvb51ckol",
@@ -279,6 +204,76 @@
 			"from":"14oiy17mas0nn",
 			"fromHandle":"source",
 			"to":"hjkhuvb51ckol"
+		},
+		{
+			"from":"21fcc1eia39st",
+			"fromHandle":"source",
+			"to":"0rp4bh4z3u4jg"
+		},
+		{
+			"from":"0rp4bh4z3u4jg",
+			"fromHandle":"source",
+			"to":"3clhl5o4tgl2e"
+		},
+		{
+			"from":"ddxty4r7wk3n",
+			"fromHandle":"source",
+			"to":"2urgitbbhebua"
+		},
+		{
+			"from":"2urgitbbhebua",
+			"fromHandle":"source",
+			"to":"ovzq6f43y67si"
+		},
+		{
+			"from":"qaegk0jzncoiu",
+			"fromHandle":"source",
+			"to":"i5tb4z5vw224r"
+		},
+		{
+			"from":"h61q7htt4g4x5",
+			"fromHandle":"source",
+			"to":"0qgzr1y1h6par"
+		},
+		{
+			"from":"gqp341kg4zskc",
+			"fromHandle":"source",
+			"to":"0qgzr1y1h6par"
+		},
+		{
+			"from":"3635o2t486aew",
+			"fromHandle":"source",
+			"to":"3jz69qucp004"
+		},
+		{
+			"from":"3jz69qucp004",
+			"fromHandle":"source",
+			"to":"3rb9uypaxyinp"
+		},
+		{
+			"from":"3rb9uypaxyinp",
+			"fromHandle":"source",
+			"to":"x8c6ht631e9mp"
+		},
+		{
+			"from":"x8c6ht631e9mp",
+			"fromHandle":"source",
+			"to":"qp91ojvlikiio"
+		},
+		{
+			"from":"qp91ojvlikiio",
+			"fromHandle":"source",
+			"to":"1vp36bduxkp3l"
+		},
+		{
+			"from":"1vp36bduxkp3l",
+			"fromHandle":"source",
+			"to":"051doy5twkblu"
+		},
+		{
+			"from":"ovzq6f43y67si",
+			"fromHandle":"source",
+			"to":"a93zz92jjpinl"
 		}
 	],
 	"name":"快速排序",
@@ -332,8 +327,8 @@
 			"name":"结束",
 			"parent":"",
 			"position":{
-				"x":1879.2445689262763,
-				"y":266.26134316622193
+				"x":1785.2445689262763,
+				"y":260.2613431662219
 			},
 			"style":{
 				"width":"120px",
@@ -555,11 +550,11 @@
 			"name":"条件循环",
 			"parent":"",
 			"position":{
-				"x":127.04649139955131,
-				"y":267.77630554493754
+				"x":77.04649139955154,
+				"y":266.7763055449376
 			},
 			"style":{
-				"width":"1546px",
+				"width":"1483px",
 				"height":"821px"
 			},
 			"type":65544
@@ -681,8 +676,8 @@
 			"name":"问候",
 			"parent":"",
 			"position":{
-				"x":1720.4470649268742,
-				"y":266.3432346963387
+				"x":1624.4470649268744,
+				"y":262.3432346963385
 			},
 			"style":{
 				"width":"120px",
@@ -766,8 +761,8 @@
 			"name":"输出结果",
 			"parent":"",
 			"position":{
-				"x":1708.1662964823586,
-				"y":207.289254048029
+				"x":1618.1662964823586,
+				"y":185.28925404802885
 			},
 			"style":{
 				"width":"140px",
@@ -783,14 +778,200 @@
 			"name":"等价的Python代码：\n```python\ndef quick_sort(arr: list):\n    stack = []\n    stack.append((0, len(arr) - 1))\n    while len(stack) != 0:\n        low, high = stack.pop()\n        if low >= high:\n            continue\n        pivot = arr[high]\n        i = low - 1\n        for j in range(low, high):\n            if arr[j] <= pivot:\n                i += 1\n                arr[i], arr[j] = arr[j], arr[i]\n        arr[i + 1], arr[high] = arr[high], arr[i + 1]\n        stack.append((low, i))\n        stack.append((i + 2, high))\n    return arr\n```",
 			"parent":"",
 			"position":{
-				"x":-214.90541334847353,
-				"y":479.7535504783925
+				"x":-251.46853700691065,
+				"y":481.4946516049847
 			},
 			"style":{
 				"width":"280px",
 				"height":"418px"
 			},
 			"type":0
+		},
+		{
+			"configs":[
+				{
+					"des":"左操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"left",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"{{n}}"
+				},
+				{
+					"des":"右操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"right",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"1"
+				},
+				{
+					"des":"操作符",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"operator",
+					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Select",
+					"value":"-"
+				}
+			],
+			"id":"ik1s75bozml1g",
+			"name":"双目操作符",
+			"parent":"",
+			"position":{
+				"x":454.80853468994604,
+				"y":195.40791886770577
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":12
+		},
+		{
+			"configs":[
+				{
+					"des":"变量名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"name",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"arr"
+				},
+				{
+					"des":"value",
+					"id":1777452586138,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"List",
+					"value":"[]"
+				}
+			],
+			"id":"hfhpl1bbelgv",
+			"name":"变量声明|赋值",
+			"parent":"",
+			"position":{
+				"x":-1129.1448047095466,
+				"y":177.92298918689372
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":10
+		},
+		{
+			"configs":[
+				{
+					"des":"循环次数",
+					"id":0,
+					"k":1,
+					"max":2147483647,
+					"min":1,
+					"name":"loop",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{n}}"
+				},
+				{
+					"des":"单次循环超时限制（毫秒），0表示永不超时",
+					"id":0,
+					"k":1,
+					"max":2147483647,
+					"min":0,
+					"name":"timeout",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"60000"
+				}
+			],
+			"id":"h9jqx7gtb4lih",
+			"name":"循环",
+			"parent":"",
+			"position":{
+				"x":-640.2904286382627,
+				"y":217.22635487951115
+			},
+			"style":{
+				"width":"670px",
+				"height":"220px"
+			},
+			"type":65543
+		},
+		{
+			"configs":[
+				
+			],
+			"id":"w96nosxi87qc",
+			"name":"列表拷贝",
+			"parent":"",
+			"position":{
+				"x":-617.030803796722,
+				"y":148.39055298462117
+			},
+			"style":{
+				"width":"140px",
+				"height":"44px"
+			},
+			"type":0
+		},
+		{
+			"configs":[
+				{
+					"des":"消息",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"message",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"String",
+					"value":"原数组：{{arr}}"
+				}
+			],
+			"id":"14oiy17mas0nn",
+			"name":"问候",
+			"parent":"",
+			"position":{
+				"x":88.81973810138521,
+				"y":209.3808447614367
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":3
 		},
 		{
 			"configs":[
@@ -817,8 +998,8 @@
 			"name":"结束",
 			"parent":"2exq8kptqbejq",
 			"position":{
-				"x":1350.9575764491433,
-				"y":118.8271169074298
+				"x":1323.247910322913,
+				"y":125.42465646129426
 			},
 			"style":{
 				"width":"120px",
@@ -1315,7 +1496,7 @@
 			"parent":"2exq8kptqbejq",
 			"position":{
 				"x":692.3064597855744,
-				"y":241.09139325868773
+				"y":241.09139325868767
 			},
 			"style":{
 				"width":"120px",
@@ -1371,7 +1552,7 @@
 			"parent":"2exq8kptqbejq",
 			"position":{
 				"x":532.2963674607228,
-				"y":241.52061482126078
+				"y":241.52061482126072
 			},
 			"style":{
 				"width":"120px",
@@ -1412,12 +1593,12 @@
 			"name":"循环",
 			"parent":"2exq8kptqbejq",
 			"position":{
-				"x":184.706912748381,
-				"y":329.6491153517823
+				"x":170.3565105198236,
+				"y":306.7426498370419
 			},
 			"style":{
-				"width":"938px",
-				"height":"444px"
+				"width":"738px",
+				"height":"473px"
 			},
 			"type":65543
 		},
@@ -1496,6 +1677,619 @@
 		},
 		{
 			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{stack}}"
+				},
+				{
+					"des":"要添加的元素",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"[{{low}},{{i}}]"
+				}
+			],
+			"id":"051doy5twkblu",
+			"name":"列表添加元素",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1137.1652559930328,
+				"y":325.584329314784
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":16
+		},
+		{
+			"configs":[
+				{
+					"des":"左操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"left",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"{{i}}"
+				},
+				{
+					"des":"右操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"right",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"2"
+				},
+				{
+					"des":"操作符",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"operator",
+					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Select",
+					"value":"+"
+				}
+			],
+			"id":"h99knwb2t2x4b",
+			"name":"双目操作符",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1140.0094911766776,
+				"y":391.2356098574428
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":12
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{stack}}"
+				},
+				{
+					"des":"要添加的元素",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"[{{h99knwb2t2x4b:output}},{{high}}]"
+				}
+			],
+			"id":"ddxty4r7wk3n",
+			"name":"列表添加元素",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1141.798846464875,
+				"y":455.81184799414416
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":16
+		},
+		{
+			"configs":[
+				{
+					"des":"变量名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"name",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"stackSize"
+				},
+				{
+					"des":"value",
+					"id":1777463945511,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"{{2urgitbbhebua:output}}"
+				}
+			],
+			"id":"ovzq6f43y67si",
+			"name":"变量声明|赋值",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1139.6058830379577,
+				"y":588.0532123588857
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":10
+		},
+		{
+			"configs":[
+				
+			],
+			"id":"2k6aj13x02wjc",
+			"name":"更新栈并更新栈大小",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1128.9785617410628,
+				"y":643.1074913629724
+			},
+			"style":{
+				"width":"143px",
+				"height":"44px"
+			},
+			"type":0
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{stack}}"
+				}
+			],
+			"id":"2urgitbbhebua",
+			"name":"列表长度",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":1140.0457227688387,
+				"y":524.8862127374177
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":17
+		},
+		{
+			"configs":[
+				{
+					"des":"左操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"left",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"{{i}}"
+				},
+				{
+					"des":"右操作数或变量",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"right",
+					"parent":0,
+					"quantize":0,
+					"required":false,
+					"type":"Number",
+					"value":"1"
+				},
+				{
+					"des":"操作符",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"operator",
+					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Select",
+					"value":"+"
+				}
+			],
+			"id":"3jz69qucp004",
+			"name":"双目操作符",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":952.445163421703,
+				"y":328.97940107342663
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":12
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{arr}}"
+				},
+				{
+					"des":"下标（从 0 开始）",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"index",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{3jz69qucp004:output}}"
+				}
+			],
+			"id":"3rb9uypaxyinp",
+			"name":"列表下标访问",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":952.4170623276066,
+				"y":393.1185557969819
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":13
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{arr}}"
+				},
+				{
+					"des":"下标（从 0 开始）",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"index",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{high}}"
+				}
+			],
+			"id":"x8c6ht631e9mp",
+			"name":"列表下标访问",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":952.535860498718,
+				"y":455.578303176645
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":13
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{arr}}"
+				},
+				{
+					"des":"下标（从 0 开始）",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"index",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{high}}"
+				},
+				{
+					"des":"新值（可与其它节点输出或模板配合）",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{3rb9uypaxyinp:output}}"
+				}
+			],
+			"id":"qp91ojvlikiio",
+			"name":"列表下标更新",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":947.2561106734661,
+				"y":522.8368895081358
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":14
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{arr}}"
+				},
+				{
+					"des":"下标（从 0 开始）",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"index",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{3jz69qucp004:output}}"
+				},
+				{
+					"des":"新值（可与其它节点输出或模板配合）",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{x8c6ht631e9mp:output}}"
+				}
+			],
+			"id":"1vp36bduxkp3l",
+			"name":"列表下标更新",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":948.6944167553504,
+				"y":589.3947111554269
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":14
+		},
+		{
+			"configs":[
+				
+			],
+			"id":"264v88aiucf7b",
+			"name":"最后a[i+1]与a[high]互换",
+			"parent":"2exq8kptqbejq",
+			"position":{
+				"x":934.7498287801554,
+				"y":645.9857857935712
+			},
+			"style":{
+				"width":"165px",
+				"height":"44px"
+			},
+			"type":0
+		},
+		{
+			"configs":[
+				
+			],
+			"id":"t2i6ul9d0ubh",
+			"name":"开始",
+			"parent":"h9jqx7gtb4lih",
+			"position":{
+				"x":40.0,
+				"y":100.00000000000003
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":1
+		},
+		{
+			"configs":[
+				
+			],
+			"id":"9mjw8saonpiaf",
+			"name":"结束",
+			"parent":"h9jqx7gtb4lih",
+			"position":{
+				"x":519.4832175086427,
+				"y":100.00000000000009
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":2
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{cy53991f8iu85:arr}}"
+				},
+				{
+					"des":"下标（从 0 开始）",
+					"id":0,
+					"k":1,
+					"max":0,
+					"min":0,
+					"name":"index",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"Number",
+					"value":"{{h9jqx7gtb4lih:loop_i}}"
+				}
+			],
+			"id":"4hzpqsl2vz2p8",
+			"name":"列表下标访问",
+			"parent":"h9jqx7gtb4lih",
+			"position":{
+				"x":193.51571656651038,
+				"y":100.00000000000003
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":13
+		},
+		{
+			"configs":[
+				{
+					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"list",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{arr}}"
+				},
+				{
+					"des":"要添加的元素",
+					"id":0,
+					"k":0,
+					"max":0,
+					"min":0,
+					"name":"value",
+					"parent":0,
+					"quantize":0,
+					"required":true,
+					"type":"String",
+					"value":"{{4hzpqsl2vz2p8:output}}"
+				}
+			],
+			"id":"svhw51lo1mvl",
+			"name":"列表添加元素",
+			"parent":"h9jqx7gtb4lih",
+			"position":{
+				"x":353.80447502036304,
+				"y":98.48428343348965
+			},
+			"style":{
+				"width":"120px",
+				"height":"40px"
+			},
+			"type":16
+		},
+		{
+			"configs":[
 				
 			],
 			"id":"siyjy5keslill",
@@ -1519,8 +2313,8 @@
 			"name":"结束",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":767.5935462927367,
-				"y":322.556564938806
+				"x":588.5066974099785,
+				"y":188.55825365151736
 			},
 			"style":{
 				"width":"120px",
@@ -1705,8 +2499,8 @@
 			"name":"条件",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":131.6540916174177,
-				"y":225.73688174180506
+				"x":143.5296628143737,
+				"y":242.89048458185266
 			},
 			"style":{
 				"width":"200px",
@@ -1748,8 +2542,8 @@
 			"name":"单目操作符",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":100.62133046010331,
-				"y":322.5116972875642
+				"x":68.95314060155391,
+				"y":348.90185550302203
 			},
 			"style":{
 				"width":"120px",
@@ -1770,7 +2564,7 @@
 					"quantize":0,
 					"required":true,
 					"type":"String",
-					"value":"{{cy53991f8iu85:arr}}"
+					"value":"{{arr}}"
 				},
 				{
 					"des":"下标（从 0 开始）",
@@ -1790,8 +2584,8 @@
 			"name":"列表下标访问",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":248.0863382190522,
-				"y":323.7145039051179
+				"x":245.44732239750647,
+				"y":350.10466212057577
 			},
 			"style":{
 				"width":"120px",
@@ -1832,8 +2626,8 @@
 			"name":"列表下标访问",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":401.3746660731948,
-				"y":323.72748670568956
+				"x":402.69417398396774,
+				"y":351.43715283192023
 			},
 			"style":{
 				"width":"120px",
@@ -1887,8 +2681,8 @@
 			"name":"列表下标更新",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":396.6190988593779,
-				"y":246.23727276970624
+				"x":401.8971305024694,
+				"y":264.71038352052676
 			},
 			"style":{
 				"width":"120px",
@@ -1942,258 +2736,8 @@
 			"name":"列表下标更新",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":401.8323045920712,
-				"y":179.53255185720866
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":14
-		},
-		{
-			"configs":[
-				{
-					"des":"左操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"left",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"{{i}}"
-				},
-				{
-					"des":"右操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"right",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"1"
-				},
-				{
-					"des":"操作符",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"operator",
-					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Select",
-					"value":"+"
-				}
-			],
-			"id":"3jz69qucp004",
-			"name":"双目操作符",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":575.0900957004799,
-				"y":183.38090114062197
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":12
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{arr}}"
-				},
-				{
-					"des":"下标（从 0 开始）",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"index",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{3jz69qucp004:output}}"
-				}
-			],
-			"id":"3rb9uypaxyinp",
-			"name":"列表下标访问",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":579.020518338702,
-				"y":247.52005586417727
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":13
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{arr}}"
-				},
-				{
-					"des":"下标（从 0 开始）",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"index",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{high}}"
-				}
-			],
-			"id":"x8c6ht631e9mp",
-			"name":"列表下标访问",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":577.8198085990401,
-				"y":313.93832697615903
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":13
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{arr}}"
-				},
-				{
-					"des":"下标（从 0 开始）",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"index",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{high}}"
-				},
-				{
-					"des":"新值（可与其它节点输出或模板配合）",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{3rb9uypaxyinp:output}}"
-				}
-			],
-			"id":"qp91ojvlikiio",
-			"name":"列表下标更新",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":765.1882137466307,
-				"y":187.22925042403494
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":14
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{arr}}"
-				},
-				{
-					"des":"下标（从 0 开始）",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"index",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{3jz69qucp004:output}}"
-				},
-				{
-					"des":"新值（可与其它节点输出或模板配合）",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{x8c6ht631e9mp:output}}"
-				}
-			],
-			"id":"1vp36bduxkp3l",
-			"name":"列表下标更新",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":763.987504006969,
-				"y":259.06510371441743
+				"x":396.5542729489797,
+				"y":180.85205976798147
 			},
 			"style":{
 				"width":"120px",
@@ -2209,554 +2753,11 @@
 			"name":"如果a[j]比哨兵小，则a[i]，a[j]互换",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":144.31161961808175,
-				"y":375.059593774011
+				"x":63.40314546447587,
+				"y":406.85162465290216
 			},
 			"style":{
 				"width":"222px",
-				"height":"44px"
-			},
-			"type":0
-		},
-		{
-			"configs":[
-				
-			],
-			"id":"264v88aiucf7b",
-			"name":"最后a[i+1]与a[high]互换",
-			"parent":"3635o2t486aew",
-			"position":{
-				"x":751.3624239425468,
-				"y":126.96654711203837
-			},
-			"style":{
-				"width":"165px",
-				"height":"44px"
-			},
-			"type":0
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{stack}}"
-				},
-				{
-					"des":"要添加的元素",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"[{{low}},{{i}}]"
-				}
-			],
-			"id":"051doy5twkblu",
-			"name":"列表添加元素",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1162.2359062977173,
-				"y":414.77619395951757
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":16
-		},
-		{
-			"configs":[
-				{
-					"des":"左操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"left",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"{{i}}"
-				},
-				{
-					"des":"右操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"right",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"2"
-				},
-				{
-					"des":"操作符",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"operator",
-					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Select",
-					"value":"+"
-				}
-			],
-			"id":"h99knwb2t2x4b",
-			"name":"双目操作符",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1160.9254090933061,
-				"y":489.129356589764
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":12
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{stack}}"
-				},
-				{
-					"des":"要添加的元素",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"[{{h99knwb2t2x4b:output}},{{high}}]"
-				}
-			],
-			"id":"ddxty4r7wk3n",
-			"name":"列表添加元素",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1160.0757485599577,
-				"y":560.4993429360673
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":16
-		},
-		{
-			"configs":[
-				{
-					"des":"左操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"left",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"{{stackSize}}"
-				},
-				{
-					"des":"右操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"right",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"2"
-				},
-				{
-					"des":"操作符",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"operator",
-					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Select",
-					"value":"+"
-				}
-			],
-			"id":"tk3el0571pxrv",
-			"name":"双目操作符",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1158.5582775649655,
-				"y":644.01783651856
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":12
-		},
-		{
-			"configs":[
-				{
-					"des":"变量名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"name",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{stackSize}}"
-				},
-				{
-					"des":"初始值",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"String",
-					"value":"{{tk3el0571pxrv:output}}"
-				}
-			],
-			"id":"ovzq6f43y67si",
-			"name":"变量声明|赋值",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1159.9871276667634,
-				"y":718.9346568605295
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":10
-		},
-		{
-			"configs":[
-				
-			],
-			"id":"2k6aj13x02wjc",
-			"name":"更新栈并更新栈大小",
-			"parent":"2exq8kptqbejq",
-			"position":{
-				"x":1156.8844365230307,
-				"y":347.39546337349685
-			},
-			"style":{
-				"width":"143px",
-				"height":"44px"
-			},
-			"type":0
-		},
-		{
-			"configs":[
-				{
-					"des":"左操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"left",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"{{n}}"
-				},
-				{
-					"des":"右操作数或变量",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"right",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"Number",
-					"value":"1"
-				},
-				{
-					"des":"操作符",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"operator",
-					"options":"[\"+\",\"-\",\"*\",\"/\",\"%\",\"&\",\"|\",\"^\",\"<<\",\">>\",\">>>\"]",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Select",
-					"value":"-"
-				}
-			],
-			"id":"ik1s75bozml1g",
-			"name":"双目操作符",
-			"position":{
-				"x":468.44998378853956,
-				"y":195.40791886770577
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":12
-		},
-		{
-			"configs":[
-				{
-					"des":"变量名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"name",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"arr"
-				},
-				{
-					"des":"value",
-					"id":1777452586138,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"List",
-					"value":"[]"
-				}
-			],
-			"id":"hfhpl1bbelgv",
-			"name":"变量声明|赋值",
-			"position":{
-				"x":-1129.1448047095466,
-				"y":177.92298918689372
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":10
-		},
-		{
-			"configs":[
-				{
-					"des":"循环次数",
-					"id":0,
-					"k":1,
-					"max":2147483647,
-					"min":1,
-					"name":"loop",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{n}}"
-				},
-				{
-					"des":"单次循环超时限制（毫秒），0表示永不超时",
-					"id":0,
-					"k":1,
-					"max":2147483647,
-					"min":0,
-					"name":"timeout",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"60000"
-				}
-			],
-			"id":"h9jqx7gtb4lih",
-			"name":"循环",
-			"position":{
-				"x":-640.2904286382627,
-				"y":217.22635487951115
-			},
-			"style":{
-				"width":"670px",
-				"height":"220px"
-			},
-			"type":65543
-		},
-		{
-			"configs":[
-				
-			],
-			"id":"t2i6ul9d0ubh",
-			"name":"开始",
-			"parent":"h9jqx7gtb4lih",
-			"position":{
-				"x":40.0,
-				"y":100.0
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":1
-		},
-		{
-			"configs":[
-				
-			],
-			"id":"9mjw8saonpiaf",
-			"name":"结束",
-			"parent":"h9jqx7gtb4lih",
-			"position":{
-				"x":519.4832175086427,
-				"y":100.00000000000009
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":2
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{cy53991f8iu85:arr}}"
-				},
-				{
-					"des":"下标（从 0 开始）",
-					"id":0,
-					"k":1,
-					"max":0,
-					"min":0,
-					"name":"index",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"Number",
-					"value":"{{h9jqx7gtb4lih:loop_i}}"
-				}
-			],
-			"id":"4hzpqsl2vz2p8",
-			"name":"列表下标访问",
-			"parent":"h9jqx7gtb4lih",
-			"position":{
-				"x":193.51571656651038,
-				"y":100.00000000000003
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":13
-		},
-		{
-			"configs":[
-				{
-					"des":"列表变量：推荐 {{变量名}}（与快捷插入一致）；也可填字面量池键名",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"list",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{arr}}"
-				},
-				{
-					"des":"要添加的元素",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"value",
-					"parent":0,
-					"quantize":0,
-					"required":true,
-					"type":"String",
-					"value":"{{4hzpqsl2vz2p8:output}}"
-				}
-			],
-			"id":"svhw51lo1mvl",
-			"name":"列表添加元素",
-			"parent":"h9jqx7gtb4lih",
-			"position":{
-				"x":353.80447502036304,
-				"y":98.48428343348965
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":16
-		},
-		{
-			"configs":[
-				
-			],
-			"id":"w96nosxi87qc",
-			"name":"列表拷贝",
-			"position":{
-				"x":-563.9807239688582,
-				"y":137.78053701904838
-			},
-			"style":{
-				"width":"140px",
 				"height":"44px"
 			},
 			"type":0
@@ -2794,42 +2795,14 @@
 			"name":"变量声明|赋值",
 			"parent":"3635o2t486aew",
 			"position":{
-				"x":176.81069817161915,
-				"y":165.47580623483088
+				"x":178.13020608239208,
+				"y":176.03186952101396
 			},
 			"style":{
 				"width":"120px",
 				"height":"40px"
 			},
 			"type":10
-		},
-		{
-			"configs":[
-				{
-					"des":"消息",
-					"id":0,
-					"k":0,
-					"max":0,
-					"min":0,
-					"name":"message",
-					"parent":0,
-					"quantize":0,
-					"required":false,
-					"type":"String",
-					"value":"原数组：{{arr}}"
-				}
-			],
-			"id":"14oiy17mas0nn",
-			"name":"问候",
-			"position":{
-				"x":88.81973810138521,
-				"y":209.3808447614367
-			},
-			"style":{
-				"width":"120px",
-				"height":"40px"
-			},
-			"type":3
 		}
 	]
 }
