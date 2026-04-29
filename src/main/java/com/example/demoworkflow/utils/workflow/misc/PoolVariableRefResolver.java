@@ -10,7 +10,7 @@ import java.util.Optional;
  * 的变量槽位（避免被 {@link com.example.demoworkflow.utils.workflow.pool.GlobalPool#parseConfig(String, String)}
  * 展开成列表/字典的 JSON）；其它写法仍按模板展开或字面量处理。
  */
-public final class PoolVariableRefResolver {
+public class PoolVariableRefResolver {
 
     private PoolVariableRefResolver() {}
 

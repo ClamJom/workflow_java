@@ -2,6 +2,7 @@ package com.example.demoworkflow.utils.workflow.nodes.collections.map;
 
 import com.example.demoworkflow.utils.types.NodeType;
 import com.example.demoworkflow.utils.workflow.dto.OutputVariableDes;
+import com.example.demoworkflow.utils.workflow.misc.MapNodeHelper;
 import com.example.demoworkflow.utils.workflow.misc.PoolVariableRefResolver;
 import com.example.demoworkflow.utils.workflow.nodes.NodeImpl;
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;

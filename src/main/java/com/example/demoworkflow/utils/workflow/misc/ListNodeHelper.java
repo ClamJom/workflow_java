@@ -17,7 +17,6 @@ public class ListNodeHelper {
 
     @SuppressWarnings("unchecked")
     public static List<Object> readList(GlobalPool globalPool, String token, String listVarName) {
-        log.info("List name: {}", listVarName);
         Object raw = globalPool.get(token, listVarName);
         if (raw == null) {
             throw new IllegalArgumentException("列表变量不存在: " + listVarName);

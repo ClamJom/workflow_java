@@ -27,7 +27,7 @@ import {
     PlayCircleOutlined,
 } from '@ant-design/icons-vue';
 
-import {nodeTypes, getVueFlowNodeType, NODE_TYPE_CODE, NESTABLE_FLAG, isNestableNodeType} from './nodes/index.js';
+import {nodeTypes, getVueFlowNodeType, NODE_TYPE_CODE, NESTABLE_FLAG, isNestableNodeType, isCommentNodeType} from './nodes/index.js';
 import NodeConfigPanel from './NodeConfigPanel.vue';
 import {autoLayoutVueFlowNested, NODE_WIDTH, NODE_HEIGHT} from '../utils/layout.js';
 import api from '../api/index.js';
@@ -91,8 +91,16 @@ const workflowName = ref('');
 const selectedNodeId = shallowRef(null);
 /** 配置面板是否可见 */
 const configDrawerVisible = ref(false);
-/** 节点类型列表（从后端获取） */
+/** 节点类型列表（从后端获取；注释节点由 addNodeMenuList 固定插入菜单） */
 const nodeTypeList = ref([]);
+
+/** 添加节点下拉菜单：首项固定为「注释」，其余为接口类型（去掉重复的 code 0） */
+const addNodeMenuList = computed(() => {
+    const rest = (nodeTypeList.value || []).filter(
+        (nt) => nt?.code !== NODE_TYPE_CODE.COMMENT,
+    );
+    return [{code: NODE_TYPE_CODE.COMMENT, name: '注释'}, ...rest];
+});
 /** 保存中状态 */
 const saving = ref(false);
 /** 右侧栏宽度（px），配置区与运行日志共用 */
@@ -194,6 +202,50 @@ const selectedNodeData = computed(() => {
     const node = findNode(selectedNodeId.value);
     return node ? node.data?.wnode : null;
 });
+
+/** 注释节点侧栏编辑草稿（与 wnode.name 同步） */
+const commentDraft = ref('');
+
+watch(
+    [selectedNodeId, selectedNodeData],
+    () => {
+        const w = selectedNodeData.value;
+        if (w && isCommentNodeType(w.type)) {
+            commentDraft.value = w.name ?? '';
+        } else {
+            commentDraft.value = '';
+        }
+    },
+    {flush: 'post'},
+);
+
+function applyCommentText(text) {
+    const id = selectedNodeId.value;
+    if (!id) return;
+    const node = findNode(id);
+    if (!node || !isCommentNodeType(node.data?.wnode?.type)) return;
+    const s = text == null ? '' : String(text);
+    setNodes(getNodes.value.map((n) => {
+        if (n.id !== id) return n;
+        return {
+            ...n,
+            label: s,
+            data: {
+                ...n.data,
+                wnode: {
+                    ...n.data.wnode,
+                    name: s,
+                    configs: [],
+                },
+            },
+        };
+    }));
+}
+
+function onCommentDraftUpdate(v) {
+    commentDraft.value = v;
+    applyCommentText(v);
+}
 
 // ─── 工具函数 ─────────────────────────────────────────────────────────────────
 
@@ -297,16 +349,24 @@ function castToWorkflowVO() {
     const currentNodes = getNodes.value;
     const currentEdges = getEdges.value;
 
+    const commentIds = new Set(
+        currentNodes
+            .filter((n) => isCommentNodeType(n.data?.wnode?.type))
+            .map((n) => n.id),
+    );
+
     return {
         name: workflowName.value,
         nodes: currentNodes.map(n => {
             const pos = n.position || {x: 0, y: 0};
             const style = mergeStyleWithDimensionsForSave(n);
+            const typ = n.data?.wnode?.type;
+            const isComment = isCommentNodeType(typ);
             return {
                 id: n.id,
                 name: n.data?.wnode?.name || '',
-                type: n.data?.wnode?.type || 0,
-                configs: n.data?.wnode?.configs || [],
+                type: typ ?? 0,
+                configs: isComment ? [] : (n.data?.wnode?.configs || []),
                 position: {
                     x: typeof pos.x === 'number' ? pos.x : 0,
                     y: typeof pos.y === 'number' ? pos.y : 0,
@@ -315,13 +375,18 @@ function castToWorkflowVO() {
                 ...(style ? {style} : {}),
             };
         }),
-        edges: currentEdges.map(e => ({
-            from: e.source,
-            to: e.target,
-            ...(e.sourceHandle != null && e.sourceHandle !== ''
-                ? {fromHandle: e.sourceHandle}
-                : {}),
-        })),
+        edges: currentEdges
+            .filter(
+                (e) =>
+                    !commentIds.has(e.source) && !commentIds.has(e.target),
+            )
+            .map(e => ({
+                from: e.source,
+                to: e.target,
+                ...(e.sourceHandle != null && e.sourceHandle !== ''
+                    ? {fromHandle: e.sourceHandle}
+                    : {}),
+            })),
     };
 }
 
@@ -449,6 +514,7 @@ function preCheckWorkflow(payload) {
     const badIn = [];
     for (const n of nodes) {
         if (n.id === startId) continue;
+        if (isCommentNodeType(n.type)) continue;
         if (n.type === NODE_TYPE_CODE.START && hasParent(n)) continue;
         if (inCount[n.id] < 1) badIn.push(n.id);
     }
@@ -467,6 +533,7 @@ function preCheckWorkflow(payload) {
     const badOut = [];
     for (const n of nodes) {
         if (n.id === endId) continue;
+        if (isCommentNodeType(n.type)) continue;
         if (n.type === NODE_TYPE_CODE.END && hasParent(n)) continue;
         if (outCount[n.id] < 1) badOut.push(n.id);
     }
@@ -590,6 +657,7 @@ async function handleRunWorkflow() {
     }
 
     const payload = castToWorkflowVO();
+    payload.nodes = payload.nodes.filter(n => !isCommentNodeType(n.type));
     const preCheck = preCheckWorkflow(payload);
     if (!preCheck.valid) {
         message.error(preCheck.message);
@@ -711,6 +779,8 @@ async function appendNodeOutputsToPool(node, pool) {
     const upstreamId = node.id;
     const nodeCode = node.data?.wnode?.type;
     if (nodeCode == null) return;
+
+    if (isCommentNodeType(nodeCode)) return;
 
     if (nodeCode === NODE_TYPE_CODE.START) {
         const variables = getNodeMapKeys(node.data?.wnode);
@@ -876,9 +946,13 @@ async function loadWorkflow() {
 async function loadNodeTypes() {
     try {
         const res = await api.workflow.getNodeTypes();
-        nodeTypeList.value = res.data || [];
+        const list = res.data || [];
+        nodeTypeList.value = list.map((nt) =>
+            nt?.code === NODE_TYPE_CODE.COMMENT ? {...nt, name: '注释'} : nt,
+        );
     } catch (err) {
         console.error('[WorkflowPreview] 加载节点类型失败', err);
+        nodeTypeList.value = [];
     }
 }
 
@@ -1337,6 +1411,10 @@ onConnect((params) => {
     const tgtNode = findNode(params.target);
     const st = srcNode?.data?.wnode?.type;
     const tt = tgtNode?.data?.wnode?.type;
+    if (isCommentNodeType(st) || isCommentNodeType(tt)) {
+        message.warning('注释节点不允许连线');
+        return;
+    }
     if (st === NODE_TYPE_CODE.BREAK) {
         if (tt !== NODE_TYPE_CODE.END) {
             message.warning('跳出节点的出边只能连接至结束节点');
@@ -1552,8 +1630,8 @@ watch(() => props.uuid, (newUuid) => {
           <template #overlay>
             <Menu>
               <Menu.Item
-                v-for="nt in nodeTypeList"
-                :key="nt.code"
+                v-for="nt in addNodeMenuList"
+                :key="`${nt.code}-${nt.name}`"
                 @click="addNode(nt)"
               >
                 {{ nt.name }}
@@ -1653,7 +1731,9 @@ watch(() => props.uuid, (newUuid) => {
           class="side-section side-section--config"
         >
           <div class="config-panel-header">
-            <span class="config-panel-title">节点配置</span>
+            <span class="config-panel-title">{{
+              selectedNodeData && isCommentNodeType(selectedNodeData.type) ? '注释' : '节点配置'
+            }}</span>
             <Button
               type="text"
               size="small"
@@ -1663,8 +1743,18 @@ watch(() => props.uuid, (newUuid) => {
             </Button>
           </div>
           <div class="config-panel-body">
+            <template v-if="selectedNodeData && isCommentNodeType(selectedNodeData.type)">
+              <div class="comment-panel-hint">仅注释说明，不参与执行与连线。</div>
+              <Input.TextArea
+                :value="commentDraft"
+                :rows="10"
+                placeholder="输入注释内容…"
+                allow-clear
+                @update:value="onCommentDraftUpdate"
+              />
+            </template>
             <NodeConfigPanel
-              v-if="selectedNodeId && selectedNodeData"
+              v-else-if="selectedNodeData"
               :key="selectedNodeId"
               :node-code="selectedNodeData.type"
               :node-name="selectedNodeData.name || ''"
@@ -1879,6 +1969,13 @@ watch(() => props.uuid, (newUuid) => {
   flex: 1;
   overflow-y: auto;
   padding: 12px 16px;
+}
+
+.comment-panel-hint {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  margin-bottom: 10px;
+  line-height: 1.5;
 }
 
 .run-log-body {

@@ -1,4 +1,4 @@
-package com.example.demoworkflow.utils.workflow.nodes.collections.map;
+package com.example.demoworkflow.utils.workflow.misc;
 
 import com.example.demoworkflow.utils.workflow.pool.GlobalPool;
 
@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 工作流字典节点：变量池中的 Map 读取、键规范化与可变副本。
  */
-public final class MapNodeHelper {
+public class MapNodeHelper {
 
     private MapNodeHelper() {}
 
