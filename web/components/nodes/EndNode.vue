@@ -1,8 +1,14 @@
 <script setup>
 import {Handle, Position} from "@vue-flow/core";
-import {computed} from "vue";
+import {computed, inject} from "vue";
 
 const props = defineProps(["id", "data"]);
+
+const layoutDirection = inject('layoutDirection', 'horizontal');
+
+const targetPosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Top : Position.Left
+);
 
 const uiStateClass = computed(() => {
   if (props.data?.precheckError) return 'state-precheck-error';
@@ -17,7 +23,7 @@ const uiStateClass = computed(() => {
 
 <template>
 <div class="workflow-node end-node" :class="uiStateClass">
-  <Handle type="target" :position="Position.Left" id="target" />
+  <Handle type="target" :position="targetPosition" id="target" />
   <span class="node-label">{{ data?.wnode?.name || '结束节点' }}</span>
 </div>
 </template>

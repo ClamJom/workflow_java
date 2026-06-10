@@ -1,10 +1,19 @@
 <script setup>
 import {Handle, Position, useVueFlow} from '@vue-flow/core';
 import {NodeResizer} from '@vue-flow/node-resizer';
-import {computed, nextTick} from 'vue';
+import {computed, nextTick, inject} from 'vue';
 import '@vue-flow/node-resizer/dist/style.css';
 
 const props = defineProps(['id', 'data']);
+
+const layoutDirection = inject('layoutDirection', 'horizontal');
+
+const targetPosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Top : Position.Left
+);
+const sourcePosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Bottom : Position.Right
+);
 
 const {setNodes, updateNodeInternals} = useVueFlow();
 
@@ -50,14 +59,16 @@ function onResizeEnd(ev) {
       @resize-end="onResizeEnd"
     />
     <div class="loop-shell" :class="uiStateClass">
+      <Handle type="target" :position="targetPosition" id="target" class="loop-handle"
+              :class="layoutDirection === 'vertical' ? 'loop-handle-top' : 'loop-handle-left'" />
       <div class="loop-chrome">
-        <Handle type="target" :position="Position.Left" id="target" class="loop-handle loop-handle-left" />
         <span class="loop-title">{{ data?.wnode?.name || '循环' }}</span>
-        <Handle type="source" :position="Position.Right" id="source" class="loop-handle loop-handle-right" />
       </div>
       <div class="loop-drop-area" aria-hidden="true">
         <span class="loop-drop-hint">子图区域 · 可将外部节点拖入</span>
       </div>
+      <Handle type="source" :position="sourcePosition" id="source" class="loop-handle"
+              :class="layoutDirection === 'vertical' ? 'loop-handle-bottom' : 'loop-handle-right'" />
     </div>
   </div>
 </template>
@@ -134,16 +145,30 @@ function onResizeEnd(ev) {
 
 .loop-handle {
   position: absolute !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
 }
 
 .loop-handle-left {
   left: -6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
 }
 
 .loop-handle-right {
   right: -6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.loop-handle-top {
+  top: -6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.loop-handle-bottom {
+  bottom: -6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 .loop-drop-area {

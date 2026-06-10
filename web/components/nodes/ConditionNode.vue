@@ -1,8 +1,17 @@
 <script setup>
 import {Handle, Position} from '@vue-flow/core';
-import {computed, ref} from 'vue';
+import {computed, ref, inject} from 'vue';
 
 const props = defineProps(['id', 'data']);
+
+const layoutDirection = inject('layoutDirection', 'horizontal');
+
+const targetPosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Top : Position.Left
+);
+const sourcePosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Bottom : Position.Right
+);
 
 const noCondition = ref(true);
 
@@ -64,7 +73,7 @@ const uiStateClass = computed(() => {
 
 <template>
   <div class="workflow-node condition-node" :class="uiStateClass">
-    <Handle type="target" :position="Position.Left" id="target" />
+    <Handle type="target" :position="targetPosition" id="target" />
 
     <div class="condition-body">
       <div class="node-title">{{ data?.wnode?.name || '条件节点' }}</div>
@@ -78,9 +87,10 @@ const uiStateClass = computed(() => {
         <Handle
           v-if="!noCondition"
           type="source"
-          :position="Position.Right"
+          :position="sourcePosition"
           :id="`source-${index}`"
           class="condition-source-handle"
+          :class="layoutDirection === 'vertical' ? 'condition-source-handle--bottom' : 'condition-source-handle--right'"
         />
       </div>
     </div>
@@ -153,10 +163,19 @@ const uiStateClass = computed(() => {
 
 .condition-source-handle {
   position: absolute !important;
+  z-index: 999;
+}
+
+.condition-source-handle--right {
   right: -6px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 999;
+}
+
+.condition-source-handle--bottom {
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .state-running {

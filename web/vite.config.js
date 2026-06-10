@@ -14,6 +14,7 @@ export default defineConfig({
     },
   },
   server:{
+    open: true,
     proxy:{
       '/api/v3': {
         target: 'http://localhost:8080/api/v3',

@@ -1,8 +1,14 @@
 <script setup>
 import {Handle, Position} from "@vue-flow/core";
-import {computed} from "vue";
+import {computed, inject} from "vue";
 
 const props = defineProps(["id", "data"]);
+
+const layoutDirection = inject('layoutDirection', 'horizontal');
+
+const sourcePosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Bottom : Position.Right
+);
 
 /**
  * 根据运行状态返回对应的 CSS 类名
@@ -22,7 +28,7 @@ const uiStateClass = computed(() => {
 <template>
 <div class="workflow-node start-node" :class="uiStateClass">
   <span class="node-label">{{ data?.wnode?.name || '起始节点' }}</span>
-  <Handle type="source" :position="Position.Right" id="source" />
+  <Handle type="source" :position="sourcePosition" id="source" />
 </div>
 </template>
 

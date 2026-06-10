@@ -1,5 +1,5 @@
 <script setup>
-import {ref, shallowRef, computed, watch, onMounted, onUnmounted, nextTick} from 'vue';
+import {ref, shallowRef, computed, watch, onMounted, onUnmounted, nextTick, provide} from 'vue';
 import {
     VueFlow,
     useVueFlow,
@@ -78,6 +78,7 @@ const {
     getSelectedEdges,
     fitView,
     screenToFlowCoordinate,
+    updateNodeInternals,
 } = useVueFlow();
 
 // ─── 状态 ─────────────────────────────────────────────────────────────────────
@@ -88,6 +89,7 @@ const nodes = ref([]);
 const edges = ref([]);
 /** 当前布局方向 */
 const layoutDirection = ref('horizontal');
+provide('layoutDirection', layoutDirection);
 /** 加载状态 */
 const loading = ref(false);
 /** 工作流名称 */
@@ -1592,7 +1594,11 @@ function applyLayout(direction) {
     const currentEdges = getEdges.value;
     const laid = autoLayoutRef(currentNodes, currentEdges, direction);
     setNodes(sortVueFlowNodesParentFirst(laid));
-    nextTick(() => fitView({padding: 0.2}));
+    nextTick(() => {
+        fitView({padding: 0.2});
+        // 刷新所有节点的 Handle 位置，使已有边重新路由到新的锚点
+        getNodes.value.forEach(n => updateNodeInternals(n.id));
+    });
 }
 
 // ─── 键盘快捷键 ───────────────────────────────────────────────────────────────
