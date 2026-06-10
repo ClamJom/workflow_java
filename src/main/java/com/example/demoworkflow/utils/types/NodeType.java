@@ -46,6 +46,9 @@ public enum NodeType {
     QUEUE_POP("队列弹出", 0x000019),
     QUEUE_SIZE("队列长度", 0x00001A),
     QUEUE_CLEAR("队列清空", 0x00001B),
+    // 函数
+    FUNCTION_DEF("函数定义", 0x00001C | NodeType.NESTABLE_FLAG),
+    FUNCTION_CALL("函数调用", 0x00001D),
     ;
 
     private final String name;
@@ -85,6 +88,8 @@ public enum NodeType {
         nodeClazzMap.put(QUEUE_POP.getCode(), QueuePopNode.class);
         nodeClazzMap.put(QUEUE_SIZE.getCode(), QueueSizeNode.class);
         nodeClazzMap.put(QUEUE_CLEAR.getCode(), QueueClearNode.class);
+        nodeClazzMap.put(FUNCTION_DEF.getCode(), FunctionDefNode.class);
+        nodeClazzMap.put(FUNCTION_CALL.getCode(), FunctionCallNode.class);
     }
 
     NodeType(String name, int code){

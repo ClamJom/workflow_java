@@ -51,6 +51,11 @@ public class NodeImpl implements Node {
     public String parentNodeId = null;
 
     /**
+     * 节点展示名称（来自前端 NodeVO.name）
+     */
+    private String nodeName = "";
+
+    /**
      * 下面二者皆是为可嵌套节点做的准备
      */
     public NodeImpl subStartNode = null;

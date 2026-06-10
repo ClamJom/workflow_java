@@ -564,6 +564,7 @@ function preCheckWorkflow(payload) {
         if (n.id === startId) continue;
         if (isCommentNodeType(n.type)) continue;
         if (n.type === NODE_TYPE_CODE.START && hasParent(n)) continue;
+        if (n.type === NODE_TYPE_CODE.FUNCTION_DEF) continue;
         if (inCount[n.id] < 1) badIn.push(n.id);
     }
     if (badIn.length) {
@@ -583,6 +584,7 @@ function preCheckWorkflow(payload) {
         if (n.id === endId) continue;
         if (isCommentNodeType(n.type)) continue;
         if (n.type === NODE_TYPE_CODE.END && hasParent(n)) continue;
+        if (n.type === NODE_TYPE_CODE.FUNCTION_DEF) continue;
         if (outCount[n.id] < 1) badOut.push(n.id);
     }
     if (badOut.length) {

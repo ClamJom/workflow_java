@@ -2,6 +2,7 @@ package com.example.demoworkflow.utils.workflow.pool;
 
 import com.alibaba.fastjson2.JSON;
 import com.example.demoworkflow.pojo.Config;
+import com.example.demoworkflow.utils.workflow.nodes.NodeImpl;
 import com.example.demoworkflow.utils.workflow.result.WorkflowResult;
 import com.example.demoworkflow.utils.workflow.states.NodeStates;
 import com.example.demoworkflow.utils.workflow.states.ResultHandlerStates;
@@ -36,6 +37,24 @@ public class GlobalPool {
     public RedissonClient redissonClient;
 
     private final Map<String, Queue<WorkflowResult>> results = new ConcurrentHashMap<>();
+
+    /**
+     * 工作流节点映射表（token → nodeId → NodeImpl）
+     * 用于在运行时根据节点 ID 查找特定节点实例（如 FunctionCallNode 查找 FunctionDefNode）
+     */
+    private final Map<String, Map<String, NodeImpl>> workflowNodeMaps = new ConcurrentHashMap<>();
+
+    public void setWorkflowNodeMap(String token, Map<String, NodeImpl> nodeMap) {
+        workflowNodeMaps.put(token, nodeMap);
+    }
+
+    public Map<String, NodeImpl> getWorkflowNodeMap(String token) {
+        return workflowNodeMaps.get(token);
+    }
+
+    public void clearWorkflowNodeMap(String token) {
+        workflowNodeMaps.remove(token);
+    }
 
     /**
      * 向Redis变量池中写入一个值

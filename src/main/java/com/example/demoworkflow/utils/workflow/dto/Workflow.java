@@ -120,6 +120,8 @@ public class Workflow {
            }
            // 配置项的初始化应当在节点执行前进行
            nodeInstance.configList = ConfigMapper.INSTANCE.listConfigVOToListConfig(node.configs);
+           // 保存节点名称（用于 FunctionCallNode 按名称查找 FunctionDefNode）
+           nodeInstance.setNodeName(node.name != null ? node.name : "");
            nodes.add(nodeInstance);
            nodeMap.put(node.id, nodeInstance);
            // 对起始节点和结束节点的父节点判空已保证其属于最外层工作流
@@ -141,6 +143,22 @@ public class Workflow {
         if(hasCircle(vo.edges)) {
             putInvalidMessage(workflow, "不允许存在环结构");
             return workflow;
+        }
+        // 函数定义节点名称唯一性检查
+        Set<String> funcDefNames = new HashSet<>();
+        for (NodeImpl node : nodes) {
+            if (node.getNodeType() == NodeType.FUNCTION_DEF) {
+                String name = node.getNodeName();
+                if (name == null || name.isEmpty()) {
+                    putInvalidMessage(workflow, String.format("函数定义节点名称不允许为空！节点ID:%s", node.nodeId));
+                    return workflow;
+                }
+                if (funcDefNames.contains(name)) {
+                    putInvalidMessage(workflow, String.format("函数定义节点名称必须唯一！存在多个名称为「%s」的函数定义节点。", name));
+                    return workflow;
+                }
+                funcDefNames.add(name);
+            }
         }
         for(EdgeVO edge: vo.edges) {
             String fromP = nodeMap.get(edge.from).parentNodeId;
@@ -181,11 +199,15 @@ public class Workflow {
                     }
                 }
             }
-            if (node.getNodeType() != NodeType.END && outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
+            if (node.getNodeType() != NodeType.END
+                    && node.getNodeType() != NodeType.FUNCTION_DEF
+                    && outDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
                 putInvalidMessage(workflow, String.format("不允许没有出边的节点！节点ID:%s", node.nodeId));
                 return workflow;
             }
-            if (node.getNodeType() != NodeType.START && inDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
+            if (node.getNodeType() != NodeType.START
+                    && node.getNodeType() != NodeType.FUNCTION_DEF
+                    && inDegree.computeIfAbsent(node.nodeId, k -> 0) == 0){
                 putInvalidMessage(workflow, String.format("不允许没有入边的节点！节点ID:%s", node.nodeId));
                 return workflow;
             }
@@ -206,6 +228,9 @@ public class Workflow {
                 parentNode.subEndNode = node;
             }
         }
+        // 将节点映射表存入全局池，供 FunctionCallNode 等节点运行时查找其它节点
+        globalPool.setWorkflowNodeMap(workflow.getToken(), nodeMap);
+
         workflow.getNodes().addAll(nodes);
         return workflow;
     }

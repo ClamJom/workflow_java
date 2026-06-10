@@ -10,6 +10,8 @@ import ConditionNode from './ConditionNode.vue';
 import LoopNode from './LoopNode.vue';
 import BreakNode from './BreakNode.vue';
 import CommentNode from './CommentNode.vue';
+import FunctionDefNode from './FunctionDefNode.vue';
+import FunctionCallNode from './FunctionCallNode.vue';
 
 // 用 markRaw 标记组件，防止 Vue 将其变为响应式对象（避免性能警告）
 const StartNodeRaw = markRaw(StartNode);
@@ -19,6 +21,8 @@ const ConditionNodeRaw = markRaw(ConditionNode);
 const LoopNodeRaw = markRaw(LoopNode);
 const BreakNodeRaw = markRaw(BreakNode);
 const CommentNodeRaw = markRaw(CommentNode);
+const FunctionDefNodeRaw = markRaw(FunctionDefNode);
+const FunctionCallNodeRaw = markRaw(FunctionCallNode);
 
 export {
     StartNodeRaw as StartNode,
@@ -28,6 +32,8 @@ export {
     LoopNodeRaw as LoopNode,
     BreakNodeRaw as BreakNode,
     CommentNodeRaw as CommentNode,
+    FunctionDefNodeRaw as FunctionDefNode,
+    FunctionCallNodeRaw as FunctionCallNode,
 };
 
 /**
@@ -66,6 +72,8 @@ export const NODE_TYPE_CODE = {
     QUEUE_POP: 0x000019,
     QUEUE_SIZE: 0x00001A,
     QUEUE_CLEAR: 0x00001B,
+    FUNCTION_DEF: 0x00001C | NESTABLE_FLAG,
+    FUNCTION_CALL: 0x00001D,
 };
 
 /**
@@ -116,6 +124,10 @@ export function getVueFlowNodeType(code) {
             return 'loop';
         case NODE_TYPE_CODE.BREAK:
             return 'break';
+        case NODE_TYPE_CODE.FUNCTION_DEF:
+            return 'function-def';
+        case NODE_TYPE_CODE.FUNCTION_CALL:
+            return 'function-call';
         default:
             return 'work';
     }
@@ -132,4 +144,6 @@ export const nodeTypes = {
     loop: LoopNode,
     break: BreakNode,
     comment: CommentNode,
+    'function-def': FunctionDefNode,
+    'function-call': FunctionCallNode,
 };

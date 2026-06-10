@@ -116,6 +116,7 @@ public class ResultHandler {
         globalPool.resultHandlerDone(workflow.getToken());
         // 最后清理变量池
         globalPool.deleteAll(token);
+        globalPool.clearWorkflowNodeMap(token);
     }
 
     private void handler(Workflow workflow, SseHandler sseHandler) throws InterruptedException {
@@ -155,6 +156,7 @@ public class ResultHandler {
         // 最后清理变量池
         globalPool.deleteAll(token);
         globalPool.clearWorkflowResults(token);
+        globalPool.clearWorkflowNodeMap(token);
         sseHandler.close(token);
     }
 }
