@@ -73,11 +73,21 @@ export function autoLayoutRef(vfNodes, vfEdges, direction = 'horizontal'){
         })
         const parentNode = byId.get(pid);
         if (!parentNode) continue;
+        const pWidth = Math.max(maxX - minX + 20, 280);
+        const pHeight = Math.max(maxY - minY + 20, 200);
         parentNode.dimensions = {
             ...parentNode.dimensions,
-            width: Math.max(maxX - minX + 20, 280),
-            height: Math.max(maxY - minY + 20, 200)
+            width: pWidth,
+            height: pHeight
         }
+        const subOffsetX = (pWidth - maxX + minX - 40) / 2;
+        const subOffsetY = (pHeight - maxY + minY - 40) / 2;
+        nodes.forEach(item => {
+            item.position = {
+                x: item.position.x + subOffsetX,
+                y: item.position.y + subOffsetY
+            }
+        })
     }
     vfNodes.forEach(item => {
         item.style = {
