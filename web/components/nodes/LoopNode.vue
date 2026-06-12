@@ -114,7 +114,7 @@ function onResizeEnd(ev) {
   cursor: grab;
   user-select: none;
   border: 2px solid #722ed1;
-  background: rgba(250, 245, 255, 0.42);
+  background: rgba(250, 245, 255, 0.75);
   box-shadow: 0 2px 12px rgba(114, 46, 209, 0.12);
   transition: box-shadow 0.2s, border-color 0.2s;
   pointer-events: none;

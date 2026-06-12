@@ -1,10 +1,19 @@
 <script setup>
 import {Handle, Position, useVueFlow} from '@vue-flow/core';
 import {NodeResizer} from '@vue-flow/node-resizer';
-import {computed, nextTick} from 'vue';
+import {computed, nextTick, inject} from 'vue';
 import '@vue-flow/node-resizer/dist/style.css';
 
 const props = defineProps(['id', 'data']);
+
+const layoutDirection = inject('layoutDirection', 'horizontal');
+
+const targetPosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Top : Position.Left
+);
+const sourcePosition = computed(() =>
+  layoutDirection.value === 'vertical' ? Position.Bottom : Position.Right
+);
 
 const {setNodes, updateNodeInternals} = useVueFlow();
 
@@ -45,11 +54,13 @@ function onResizeEnd(ev) {
   <div class="funcdef-root">
     <NodeResizer
       class="funcdef-node-resizer"
-      :min-width="320"
-      :min-height="220"
+      :min-width="280"
+      :min-height="200"
       @resize-end="onResizeEnd"
     />
     <div class="funcdef-shell" :class="uiStateClass">
+      <Handle type="target" :position="targetPosition" id="target" class="funcdef-handle"
+              :class="layoutDirection === 'vertical' ? 'funcdef-handle-top' : 'funcdef-handle-left'" />
       <div class="funcdef-chrome">
         <span class="funcdef-title">{{ data?.wnode?.name || '函数定义' }}</span>
       </div>
@@ -58,6 +69,8 @@ function onResizeEnd(ev) {
           <span class="funcdef-drop-hint">函数体 · 可将节点拖入。参数在内部「开始」节点中配置</span>
         </div>
       </div>
+      <Handle type="source" :position="sourcePosition" id="source" class="funcdef-handle"
+              :class="layoutDirection === 'vertical' ? 'funcdef-handle-bottom' : 'funcdef-handle-right'" />
     </div>
   </div>
 </template>
@@ -90,8 +103,8 @@ function onResizeEnd(ev) {
 .funcdef-shell {
   width: 100%;
   height: 100%;
-  min-width: 320px;
-  min-height: 220px;
+  min-width: 280px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   border-radius: 12px;
@@ -100,7 +113,7 @@ function onResizeEnd(ev) {
   cursor: grab;
   user-select: none;
   border: 2px solid #096dd9;
-  background: rgba(230, 244, 255, 0.38);
+  background: rgba(230, 244, 255, 0.75);
   box-shadow: 0 2px 12px rgba(9, 109, 217, 0.12);
   transition: box-shadow 0.2s, border-color 0.2s;
   pointer-events: none;
@@ -131,16 +144,30 @@ function onResizeEnd(ev) {
 
 .funcdef-handle {
   position: absolute !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
 }
 
 .funcdef-handle-left {
   left: -6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
 }
 
 .funcdef-handle-right {
   right: -6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.funcdef-handle-top {
+  top: -6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.funcdef-handle-bottom {
+  bottom: -6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 .funcdef-body {

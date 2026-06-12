@@ -45,7 +45,7 @@ import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 
 /** 边默认叠放顺序，便于在子图内点到边线 */
-const defaultEdgeOpts = {zIndex: 1001};
+const defaultEdgeOpts = {};
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -1132,7 +1132,7 @@ async function addNode(nodeType) {
         addNodes([
             {
                 id: loopId,
-                type: 'loop',
+                type: getVueFlowNodeType(code),
                 position: {x: baseX, y: baseY},
                 style: {width: '560px', height: '340px'},
                 data: {
@@ -1982,19 +1982,6 @@ watch(() => props.uuid, (newUuid) => {
 :deep(.vue-flow) {
   width: 100%;
   height: 100%;
-}
-
-/* 边线在节点层之上，便于子图内选中边 */
-.flow-canvas :deep(.vue-flow__edges) {
-  z-index: 2;
-}
-
-.flow-canvas :deep(.vue-flow__nodes) {
-  z-index: 1;
-}
-
-.flow-canvas :deep(.vue-flow__resize-control) {
-  z-index: 3;
 }
 
 /* ── 与画布同级的右侧栏 ── */

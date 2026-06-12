@@ -75,8 +75,8 @@ export function autoLayoutRef(vfNodes, vfEdges, direction = 'horizontal'){
         if (!parentNode) continue;
         parentNode.dimensions = {
             ...parentNode.dimensions,
-            width: maxX - minX + 20,
-            height: maxY - minY + 20
+            width: Math.max(maxX - minX + 20, 280),
+            height: Math.max(maxY - minY + 20, 200)
         }
     }
     vfNodes.forEach(item => {
